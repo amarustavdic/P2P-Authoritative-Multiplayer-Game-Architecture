@@ -1,16 +1,25 @@
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.net.*;
 
 public class UDPSender extends Thread {
 
     private final boolean isBootstrapNode;
-    private final String bootstrapNodeIp;
+    private final InetAddress bootstrapNodeIp;
     private final int port;
+    private final InetAddress senderIP;
+    private byte[] outBuf;
+    private DatagramSocket udpSocket;
+    private Gson gson;
 
-    public UDPSender() {
+    public UDPSender() throws UnknownHostException, SocketException {
         this.isBootstrapNode = RoutingTable.isIsBootstrapNode();
-        this.bootstrapNodeIp = RoutingTable.getBootstrapNodeIp();
+        this.bootstrapNodeIp = InetAddress.getByName(RoutingTable.getBootstrapNodeIp());
         this.port = RoutingTable.getPort();
+        this.gson = new Gson();
+        this.senderIP = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
+        this.udpSocket = new DatagramSocket();
     }
 
 
@@ -21,52 +30,25 @@ public class UDPSender extends Thread {
 
 
         while (true) {
+            // for testing purposes to see easier what is happening
             try {
                 sleep(5000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            DatagramSocket ds = null;
-            InetAddress ip = null;
+            if (!UDPMessageQueue.isEmpty()) {
+                UDPMessage msg = UDPMessageQueue.getMessage();
+                outBuf = msg.getBytes();
 
-            if (!isBootstrapNode && RoutingTable.allBucketsEmpty()) {
-                // contact bootstrap node
+                DatagramPacket packet = new DatagramPacket(outBuf, outBuf.length, msg.getReceiverIP(), port);
                 try {
-                    ip = InetAddress.getByName(bootstrapNodeIp);
-                    ds = new DatagramSocket();
-                } catch (UnknownHostException | SocketException e) {
-                    throw new RuntimeException(e);
-                }
-
-                byte buf[] = null;
-                String s = "Hello Bootstrap node!";
-                buf = s.getBytes();
-                DatagramPacket packet = new DatagramPacket(buf, buf.length, ip, port);
-                try {
-                    ds.send(packet);
+                    udpSocket.send(packet);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
-
-            if (!isBootstrapNode && !RoutingTable.allBucketsEmpty()) {
-                // contact other nodes the closest ones in routing table
-            }
-
-            if (isBootstrapNode && !RoutingTable.allBucketsEmpty()) {
-                // if you are a bootstrap node,
-                // contact only from routing table if not empty
-            }
-
-
-
-
-
-
         }
-
-
-
     }
+
 }
