@@ -1,7 +1,9 @@
 public enum UDPProtocol {
 
     PING,
-    PONG
+    PONG,
+    DISCOVER_NODES,
+    DISCOVERED_NODES,
 
 
 

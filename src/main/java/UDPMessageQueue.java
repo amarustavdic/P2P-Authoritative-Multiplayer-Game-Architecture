@@ -16,6 +16,8 @@ public class UDPMessageQueue {
     }
 
     public static boolean isEmpty() {
+        System.out.println(Constants.BLUE + "Message Queue size: " + queue.size());
+        System.out.print(Constants.RESET);
         return queue.size() == 0;
     }
 

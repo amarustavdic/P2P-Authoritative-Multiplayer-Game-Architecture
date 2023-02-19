@@ -2,50 +2,62 @@ import com.google.gson.Gson;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class UDPMessage {
 
-    private UDPProtocol protocol;
-    private InetAddress senderIP;
-    private InetAddress receiverIP;
-    private String data;
+    private final UDPMessageHeader header;
+    private final UDPMessageBody body;
 
-
-    public UDPMessage(UDPProtocol protocol, String data, InetAddress senderIP, InetAddress receiverIP) {
-        this.protocol = protocol;
-        this.senderIP = senderIP;
-        this.receiverIP = receiverIP;
-        this.data = data;
+    public UDPMessage(UDPMessageHeader header, UDPMessageBody body) {
+        this.header = header;
+        this.body = body;
     }
 
 
 
     public void print() {
-        System.out.println(new Gson().toJson(this));
+        Gson gson = new Gson();
+        String headerJson = gson.toJson(header);
+        String bodyJson = gson.toJson(body);
+
+        String messageJson = "{ \"header\": " + headerJson + ", \"body\": " + bodyJson + " }";
+        System.out.println(messageJson);
     }
 
-    public void printProtocol() {
-        System.out.println(protocol);
-    }
+
+
 
     public byte[] getBytes() {
-        return new Gson().toJson(this).getBytes(StandardCharsets.UTF_8);
+        Gson gson = new Gson();
+        String headerJson = gson.toJson(header);
+        String bodyJson = gson.toJson(body);
+        String messageJson = "{ \"header\": " + headerJson + ", \"body\": " + bodyJson + " }";
+        return messageJson.getBytes(StandardCharsets.UTF_8);
     }
+
+
+
+
 
 
     public UDPProtocol getProtocol() {
-        return protocol;
-    }
-
-    public String getData() {
-        return data;
+        return header.getProtocol();
     }
 
     public InetAddress getSenderIP() {
-        return senderIP;
+        return header.getSenderIP();
     }
 
     public InetAddress getReceiverIP() {
-        return receiverIP;
+        return header.getReceiverIP();
+    }
+
+    public int getSenderID() {
+        return header.getSenderID();
+    }
+
+    public List<Node> getNodes() {
+        return body.getNodes();
     }
 }

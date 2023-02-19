@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.List;
 
 public class UDPReceiver extends Thread {
 
@@ -12,7 +13,7 @@ public class UDPReceiver extends Thread {
     private Gson gson;
 
     public UDPReceiver() throws SocketException {
-        this.udpSocket = new DatagramSocket(RoutingTable.getPort());
+        this.udpSocket = new DatagramSocket(RoutingTable.getBootstrapNode().getPort());
         this.gson = new Gson();
         this.inBuff = new byte[65535];
     }
@@ -30,14 +31,58 @@ public class UDPReceiver extends Thread {
                 throw new RuntimeException(e);
             }
 
-            System.out.println(data(inBuff));
             String jsonStr = String.valueOf(data(inBuff));
             UDPMessage message = new Gson().fromJson(jsonStr, UDPMessage.class);
 
-            UDPMessage msg = new UDPMessage(UDPProtocol.PONG, message.getData(), message.getReceiverIP(), message.getSenderIP());
-            UDPMessageQueue.addMessage(msg);
+            // for testing only
+            System.out.print(Constants.STATUS + "Received message: " );
+            message.print();
+            System.out.print(Constants.RESET);
 
-            // Clear the buffer after every message.
+
+            switch (message.getProtocol()) {
+                case DISCOVER_NODES:
+                    boolean bootstrap = false;
+                    if (RoutingTable.getBootstrapNode().getId() == message.getSenderID()) bootstrap = true;
+
+                    Node senderNode = new Node(
+                            message.getSenderID(),
+                            message.getSenderIP(),
+                            5000,
+                            bootstrap,
+                            0
+                    );
+                    RoutingTable.add(senderNode);
+
+                    List<Node> closest = RoutingTable.getClosestNodes(senderNode,1);
+                    UDPMessageHeader header = new UDPMessageHeader(
+                            UDPProtocol.DISCOVERED_NODES,
+                            RoutingTable.getLocalNode().getIp(),
+                            message.getSenderIP(),
+                            RoutingTable.getLocalNode().getId()
+                    );
+                    UDPMessageBody body = new UDPMessageBody(closest);
+                    UDPMessage msg = new UDPMessage(header, body);
+                    UDPMessageQueue.addMessage(msg);
+                    break;
+                case DISCOVERED_NODES:
+                    List<Node> received = message.getNodes();
+                    if (received.size() > 0) {
+                        for (Node node : received) {
+                            RoutingTable.add(node);
+                            System.out.println(Constants.NET + "New node added!");
+                            System.out.print(Constants.RESET);
+                        }
+                    }
+                    break;
+                default:
+
+            }
+
+
+
+
+
             inBuff = new byte[65535];
         }
 
