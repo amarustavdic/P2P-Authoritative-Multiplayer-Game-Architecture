@@ -1,4 +1,10 @@
+package com.mygame.app.networking;
+
 import com.google.gson.Gson;
+import com.mygame.app.Constants;
+import com.mygame.app.networking.messages.UDPMessage;
+import com.mygame.app.networking.messages.UDPMessageBody;
+import com.mygame.app.networking.messages.UDPMessageHeader;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -70,8 +76,6 @@ public class UDPReceiver extends Thread {
                     if (received.size() > 0) {
                         for (Node node : received) {
                             RoutingTable.add(node);
-                            System.out.println(Constants.NET + "New node added!");
-                            System.out.print(Constants.RESET);
                         }
                     }
                     break;

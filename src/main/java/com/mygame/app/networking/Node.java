@@ -1,3 +1,5 @@
+package com.mygame.app.networking;
+
 import java.net.InetAddress;
 
 public class Node {

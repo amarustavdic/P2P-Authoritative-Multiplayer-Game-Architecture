@@ -1,7 +1,9 @@
-import java.math.BigInteger;
+package com.mygame.app.networking;
+
+import com.mygame.app.Constants;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.SecureRandom;
 import java.util.*;
 
 public class RoutingTable {
@@ -46,11 +48,13 @@ public class RoutingTable {
 
                 if (bucket.size() < BUCKET_SIZE) {
                         bucket.add(node);
+                        System.out.println(Constants.NETWORK + "New node added!" + Constants.RESET);
                 } else {
                         Node lrsNode = getLeastRecentlySeenNode(bucket);
                         if (lrsNode != null && !lrsNode.equals(localNode) && !lrsNode.equals(bootstrapNode)) {
                                 bucket.remove(lrsNode);
                                 bucket.add(node);
+                                System.out.println(Constants.NETWORK + "New node added!" + Constants.RESET);
                         }
                 }
         }

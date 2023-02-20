@@ -1,3 +1,7 @@
+package com.mygame.app.networking.messages;
+
+import com.mygame.app.networking.Node;
+
 import java.util.List;
 
 public class UDPMessageBody {

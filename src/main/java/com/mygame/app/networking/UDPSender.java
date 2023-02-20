@@ -1,3 +1,7 @@
+package com.mygame.app.networking;
+
+import com.mygame.app.networking.messages.UDPMessage;
+
 import java.io.IOException;
 import java.net.*;
 

@@ -1,4 +1,8 @@
+package com.mygame.app.networking.messages;
+
 import com.google.gson.Gson;
+import com.mygame.app.networking.Node;
+import com.mygame.app.networking.UDPProtocol;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
