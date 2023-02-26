@@ -1,26 +1,28 @@
 package com.mygame.app.networking;
 
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonToken;
+import com.mygame.app.Constants;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 
 
 public class UDPReceiver extends Thread {
 
-    private DatagramSocket udpSocket;
+    private final DatagramSocket udpSocket;
     private byte[] inBuff;
-    private Gson gson;
 
     public UDPReceiver() throws SocketException {
-        this.udpSocket = new DatagramSocket(RoutingTable.getBootstrapNode().getPort());
-        this.gson = new Gson();
+        this.udpSocket = new DatagramSocket(5000);
         this.inBuff = new byte[65535];
     }
 
 
     @Override
     public void run() {
-        /*
         DatagramPacket DpReceive = null;
         while (true) {
             DpReceive = new DatagramPacket(inBuff, inBuff.length);
@@ -33,58 +35,40 @@ public class UDPReceiver extends Thread {
             String jsonStr = String.valueOf(data(inBuff));
             UDPMessage message = new Gson().fromJson(jsonStr, UDPMessage.class);
 
-            // for testing only
-            System.out.print(Constants.STATUS + "Received message: " );
-            message.print();
-            System.out.print(Constants.RESET);
 
 
-            switch (message.getProtocol()) {
-                case DISCOVER_NODES:
-                    boolean bootstrap = false;
-                    if (RoutingTable.getBootstrapNode().getId() == message.getSenderID()) bootstrap = true;
-
-                    Node senderNode = new Node(
-                            message.getSenderID(),
-                            message.getSenderIP(),
-                            5000,
-                            bootstrap,
-                            0
-                    );
-                    RoutingTable.add(senderNode);
-
-                    UDPMessageHeader header = new UDPMessageHeader(
+            switch (message.getType()) {
+                case FIND_NODE:
+                    System.out.println("Find node message received!");
+                    String receiver = message.getSender();
+                    Node n = message.getNode();
+                    System.out.println("ID of reconstruated node: " + n.getIdHex());
+                    RoutingTable.add(n);
+                    UDPMessage reply = new UDPMessage(
+                            RoutingTable.getLocalNode().getIdHex(),
                             UDPProtocol.DISCOVERED_NODES,
-                            RoutingTable.getLocalNode().getIp(),
-                            message.getSenderIP(),
-                            RoutingTable.getLocalNode().getId()
+                            RoutingTable.getBootstrapNode().getIp(),
+                            receiver,
+                            RoutingTable.getClosestNodes(IDGenerator.hexStringToInt(message.getId()), 3)
                     );
-                    UDPMessageBody body = new UDPMessageBody(closest);
-                    UDPMessage msg = new UDPMessage(header, body);
-                    UDPMessageQueue.addMessage(msg);
+                    UDPMessageQueue.addMessage(reply);
                     break;
                 case DISCOVERED_NODES:
-                    List<Node> received = message.getNodes();
-                    if (received.size() > 0) {
-                        for (Node node : received) {
-                            RoutingTable.add(node);
-                        }
+                    System.out.println("Got discovered nodes!");
+                    for (Node node : message.getNodes()) {
+                        RoutingTable.add(node);
                     }
+
                     break;
                 default:
 
+                    break;
             }
-
-
-
-
-
             inBuff = new byte[65535];
         }
-
-
-         */
     }
+
+
 
     public static StringBuilder data(byte[] a) {
         if (a == null)

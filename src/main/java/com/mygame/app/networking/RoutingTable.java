@@ -5,9 +5,12 @@ import java.util.*;
 
 public class RoutingTable {
 
+    // alpha determines the maximum number of nodes that can be contacted in parallel
+    // when performing iterative routing or lookups in the distributed hash table.
     // B / 2^K - used to calculate prefix length for a given bucket
-    private static int B;  // ID size in number of bits
-    private static int K;  // size of k-bucket (number of nodes it can store)
+    private static int B;       // ID size in number of bits
+    private static int K;       // size of k-bucket (number of nodes it can store)
+    private static int alpha;
     private static List<List<Node>> buckets;
     private static Node localNode;
     private static Node bootstrapNode;
@@ -29,12 +32,15 @@ public class RoutingTable {
         int index = getIndex(localNode.getId(), node.getId());
         ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
         if (bucket.size() <= K) {
-            bucket.remove(node);
+            remove(node);
             bucket.add(node);
         } else {
-            bucket.remove(node);
-            removeOldestNode(bucket);
-            bucket.add(node);
+            if (remove(node)) {
+                bucket.add(node);
+            } else {
+                removeOldestNode(bucket);
+                bucket.add(node);
+            }
         }
         return true;
     }
@@ -42,14 +48,20 @@ public class RoutingTable {
     public static boolean remove(Node node) {
         int index = getIndex(localNode.getId(), node.getId());
         ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
-        bucket.remove(node);
-        return true;
+        for (int i = 0; i < bucket.size(); i++) {
+            if (bucket.get(i).getId() == node.getId()) {
+                bucket.remove(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     // k - number of the closest nodes retrieved
     public static ArrayList<Node> getClosestNodes(int id, int k) {
         ArrayList<Node> closestNodes = new ArrayList<Node>();
-        PriorityQueue<Node> pq = new PriorityQueue<Node>(Comparator.comparingInt(n -> n.getDistance(IDGenerator.intToHexString(id))));
+        PriorityQueue<Node> pq = new PriorityQueue<Node>(
+                Comparator.comparingInt(n -> n.getDistance(IDGenerator.intToHexString(id))));
         for (List<Node> bucket : buckets) {
             for (Node node : bucket) {
                 if (node.getId() != localNode.getId()) {
@@ -136,7 +148,7 @@ public class RoutingTable {
             System.out.println("BUCKET " + i);
             for (int j = 0; j < buckets.get(i).size(); j++) {
                 int id = buckets.get(i).get(j).getId();
-                System.out.print(id + "  ");
+                System.out.print(IDGenerator.intToHexString(id) + "  ");
             }
             System.out.println();
         }

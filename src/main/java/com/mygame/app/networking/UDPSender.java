@@ -15,10 +15,8 @@ public class UDPSender extends Thread {
 
     @Override
     public void run() {
-        while (!UDPMessageQueue.isEmpty()) {
-
-
-
+        while (true) {
+            if (!UDPMessageQueue.isEmpty()) {
                 UDPMessage message = UDPMessageQueue.getMessage();
 
                 DatagramPacket packet = null;
@@ -39,8 +37,9 @@ public class UDPSender extends Thread {
                 }
                 System.out.print("Message sent: ");
                 message.print();
+            }
             try {
-                sleep(2000);
+                sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

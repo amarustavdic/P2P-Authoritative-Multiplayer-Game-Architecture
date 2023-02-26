@@ -6,6 +6,7 @@ import java.util.ArrayList;
 public class RoutingTableUpdater extends Thread {
 
 
+
     public RoutingTableUpdater() {
 
 
@@ -15,13 +16,17 @@ public class RoutingTableUpdater extends Thread {
     @Override
     public void run() {
         while (true) {
+            /*
             try {
-                sleep(15000);
+                sleep(5000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            // generating DISCOVER_NODES messages and adding them in queue
+             */
+
+
+            // generating FIND_NODES messages and adding them in queue
             String idHex = RoutingTable.getLocalNode().getIdHex();
             int k = 2;
             ArrayList<Node> kNodes = RoutingTable.getClosestNodes(IDGenerator.hexStringToInt(idHex),k);
@@ -30,7 +35,7 @@ public class RoutingTableUpdater extends Thread {
             for (Node node : kNodes) {
                 UDPMessage message = new UDPMessage(
                         node.getIdHex(),
-                        UDPProtocol.DISCOVER_NODES,
+                        UDPProtocol.FIND_NODE,
                         RoutingTable.getLocalNode().getIp(),
                         node.getIp());
 
@@ -38,6 +43,8 @@ public class RoutingTableUpdater extends Thread {
                 System.out.println("Message added to queue: ");
                 message.print();
             }
+
+
         }
     }
 }
