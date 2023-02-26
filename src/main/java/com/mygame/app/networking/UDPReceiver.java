@@ -1,16 +1,9 @@
 package com.mygame.app.networking;
 
 import com.google.gson.Gson;
-import com.mygame.app.Constants;
-import com.mygame.app.networking.messages.UDPMessage;
-import com.mygame.app.networking.messages.UDPMessageBody;
-import com.mygame.app.networking.messages.UDPMessageHeader;
-
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.List;
+
 
 public class UDPReceiver extends Thread {
 

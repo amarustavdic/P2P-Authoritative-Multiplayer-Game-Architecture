@@ -7,7 +7,7 @@ public class RoutingTable {
 
     // B / 2^K - used to calculate prefix length for a given bucket
     private static int B;  // ID size in number of bits
-    private static int K = 2;  // size of k-bucket (number of nodes it can store)
+    private static int K;  // size of k-bucket (number of nodes it can store)
     private static List<List<Node>> buckets;
     private static Node localNode;
     private static Node bootstrapNode;
@@ -49,7 +49,7 @@ public class RoutingTable {
     // k - number of the closest nodes retrieved
     public static ArrayList<Node> getClosestNodes(int id, int k) {
         ArrayList<Node> closestNodes = new ArrayList<Node>();
-        PriorityQueue<Node> pq = new PriorityQueue<Node>(Comparator.comparingInt(n -> n.getDistance(id)));
+        PriorityQueue<Node> pq = new PriorityQueue<Node>(Comparator.comparingInt(n -> n.getDistance(IDGenerator.intToHexString(id))));
         for (List<Node> bucket : buckets) {
             for (Node node : bucket) {
                 if (node.getId() != localNode.getId()) {

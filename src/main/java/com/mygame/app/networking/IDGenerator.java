@@ -37,6 +37,45 @@ public class IDGenerator {
         return new String(hexChars);
     }
 
+    public static byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        byte[] bytes = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            bytes[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                    + Character.digit(hex.charAt(i+1), 16));
+        }
+        return bytes;
+    }
+
+    public static int hexStringToInt(String hex) {
+        if (hex == null || hex.isEmpty()) {
+            return 0;
+        }
+
+        hex = hex.trim().toLowerCase();
+        int result = 0;
+        for (int i = 0; i < hex.length(); i++) {
+            char c = hex.charAt(i);
+            if (c >= '0' && c <= '9') {
+                result = result * 16 + (c - '0');
+            } else if (c >= 'a' && c <= 'f') {
+                result = result * 16 + (c - 'a' + 10);
+            } else {
+                throw new IllegalArgumentException("Invalid hex string: " + hex);
+            }
+        }
+        return result;
+    }
+
+    public static String intToHexString(int num) {
+        char[] hexChars = new char[8];
+        for (int i = 0; i < 8; i++) {
+            int nibble = (num >> (28 - i * 4)) & 0xf;
+            hexChars[i] = HEX_ARRAY[nibble];
+        }
+        return new String(hexChars);
+    }
+
 
 
     public static String getIdAsString() {

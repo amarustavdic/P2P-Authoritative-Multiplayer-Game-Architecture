@@ -5,13 +5,13 @@ import java.net.UnknownHostException;
 
 public class Node {
 
-    private final int id;
+    private final String id;
     private final String ip;
     private final int port;
     private final boolean bootstrap;
     private long lastSeenTimestamp;
 
-    public Node(int id, String ip, int port, boolean bootstrap, long lastSeenTimestamp) {
+    public Node(String id, String ip, int port, boolean bootstrap, long lastSeenTimestamp) {
         this.id = id;
         this.ip = ip;
         this.port = port;
@@ -21,11 +21,15 @@ public class Node {
 
 
     public int getId() {
+        return IDGenerator.hexStringToInt(id);
+    }
+
+    public String getIdHex() {
         return id;
     }
 
-    public InetAddress getIp() throws UnknownHostException {
-        return InetAddress.getByName(ip);
+    public String getIp() {
+        return ip;
     }
 
     public int getPort() {
@@ -44,7 +48,9 @@ public class Node {
         this.lastSeenTimestamp = lastSeenTimestamp;
     }
 
-    public int getDistance(int nodeId) {
-        return id ^ nodeId;
+    public int getDistance(String nodeId) {
+        int x = IDGenerator.hexStringToInt(nodeId);
+        int y = IDGenerator.hexStringToInt(id);
+        return x ^ y;
     }
 }

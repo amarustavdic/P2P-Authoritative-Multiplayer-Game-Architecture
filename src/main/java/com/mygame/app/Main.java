@@ -11,24 +11,19 @@ import java.util.concurrent.Executors;
 
 public class Main {
 
+    private static String localIp;
+    private static String bootstrapIp = "172.17.0.2";
+    private static final int port = 5000;
+    private static final int B = 8;
+    private static final int K = 2;
+
     public static void main(String[] args) throws IOException {
-        // for testing purposes only
-        String ip = null;
-        try {
-            ip = InetAddress.getLocalHost().getHostAddress();
-            System.out.println(Constants.INFO + "IP address of the machine: " + ip + Constants.RESET);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        setLocalIp();
+        initRoutingTable(args);
 
-
-
-        IDGenerator.generateID(ip);
-        System.out.println(IDGenerator.getIdAsString());
-
-
-
-
+        // only for testing
+        Node local = RoutingTable.getLocalNode();
+        System.out.println(Constants.INFO+"IP: "+local.getIp()+"    ID: "+local.getIdHex()+Constants.RESET);
 
 
         ExecutorService executorService = Executors.newCachedThreadPool();
@@ -48,7 +43,7 @@ public class Main {
         while (true) {
             String str = scanner.nextLine();
             if (str.equals("match")) {
-                //List<com.mygame.app.networking.messages.Node> candidates = findMatchCandidate();
+
             }
         }
 
@@ -56,12 +51,26 @@ public class Main {
 
 
     public static void initRoutingTable(String[] args) {
-        boolean isBootstrap = Boolean.parseBoolean(args[0]);
-        //Node bootNode = new Node()
-        if (isBootstrap) {
+        boolean isBootstrap;
+        if (args.length == 0) isBootstrap = false;
+        else isBootstrap = Boolean.parseBoolean(args[0]);
+        // generating ID of node using SHA-1
+        IDGenerator.init(B);
+        IDGenerator.generateID(bootstrapIp+port);
+        Node bootNode = new Node(IDGenerator.getIdAsString(), bootstrapIp, port, true, 0);
+        IDGenerator.generateID(localIp+port);
+        Node localNode = new Node(IDGenerator.getIdAsString(), localIp, port, false, 0);
+        if (isBootstrap) localNode = bootNode;
+        RoutingTable.init(localNode, bootNode, B, K);
+    }
 
+    private static void setLocalIp() {
+        localIp = null;
+        try {
+            localIp = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
         }
-        //RoutingTable.init();
     }
 
     /*
