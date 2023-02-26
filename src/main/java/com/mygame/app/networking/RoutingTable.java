@@ -31,13 +31,12 @@ public class RoutingTable {
         if (node.getId() == localNode.getId()) return false;
         int index = getIndex(localNode.getId(), node.getId());
         ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
-        if (bucket.size() <= K) {
+        if (bucket.size() < K) {
             remove(node);
             bucket.add(node);
         } else {
-            if (remove(node)) {
-                bucket.add(node);
-            } else {
+            if (remove(node)) bucket.add(node);
+            else {
                 removeOldestNode(bucket);
                 bucket.add(node);
             }

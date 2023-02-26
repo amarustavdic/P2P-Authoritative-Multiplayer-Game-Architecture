@@ -1,9 +1,6 @@
 package com.mygame.app.networking;
 
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonToken;
-import com.mygame.app.Constants;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
