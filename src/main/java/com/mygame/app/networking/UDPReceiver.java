@@ -9,10 +9,12 @@ import java.net.SocketException;
 
 public class UDPReceiver extends Thread {
 
+    private PingPongHandler pingPongHandler;
     private final DatagramSocket udpSocket;
     private byte[] inBuff;
 
-    public UDPReceiver() throws SocketException {
+    public UDPReceiver(PingPongHandler pingPongHandler) throws SocketException {
+        this.pingPongHandler = pingPongHandler;
         this.udpSocket = new DatagramSocket(5000);
         this.inBuff = new byte[65535];
     }
@@ -33,7 +35,7 @@ public class UDPReceiver extends Thread {
             UDPMessage message = new Gson().fromJson(jsonStr, UDPMessage.class);
 
 
-
+            // handling different message types that come in
             switch (message.getType()) {
                 case FIND_NODE:
                     System.out.println("Find node message received!");
@@ -42,8 +44,8 @@ public class UDPReceiver extends Thread {
                     System.out.println("ID of reconstruated node: " + n.getIdHex());
                     RoutingTable.add(n);
                     UDPMessage reply = new UDPMessage(
-                            RoutingTable.getLocalNode().getIdHex(),
                             UDPProtocol.NODE_FOUND,
+                            RoutingTable.getLocalNode().getIdHex(),
                             RoutingTable.getBootstrapNode().getIp(),
                             receiver,
                             RoutingTable.getClosestNodes(IDGenerator.hexStringToInt(message.getSender_id()), 3)
@@ -55,7 +57,20 @@ public class UDPReceiver extends Thread {
                     for (Node node : message.getNodes()) {
                         RoutingTable.add(node);
                     }
-
+                    break;
+                case PING:
+                    System.out.println("Pinged by node with ID: " + message.getSender_id());
+                    // send PONG message back!!
+                    UDPMessage pong = new UDPMessage(
+                            UDPProtocol.PONG,
+                            RoutingTable.getLocalNode().getIdHex(),
+                            RoutingTable.getLocalNode().getIp(),
+                            message.getSender_ip()
+                    );
+                    UDPMessageQueue.addMessage(pong);
+                    break;
+                case PONG:
+                    pingPongHandler.repliedWithPong(message.getSender_id());
                     break;
                 default:
 

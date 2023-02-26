@@ -56,6 +56,18 @@ public class RoutingTable {
         return false;
     }
 
+    public static boolean remove(String nodeIdHex) {
+        int index = getIndex(localNode.getId(), IDGenerator.hexStringToInt(nodeIdHex));
+        ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
+        for (int i = 0; i < bucket.size(); i++) {
+            if (bucket.get(i).getId() == IDGenerator.hexStringToInt(nodeIdHex)) {
+                bucket.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // k - number of the closest nodes retrieved
     public static ArrayList<Node> getClosestNodes(int id, int k) {
         ArrayList<Node> closestNodes = new ArrayList<Node>();
@@ -76,32 +88,16 @@ public class RoutingTable {
 
     // I will see later what am I going to do about this one
     // when I will actually need to use it
-    public static void updateLastSeen(Node node) {
-        int index = getIndex(localNode.getId(), node.getId());
+    public static void updateLastSeen(String nodeIdHex) {
+        int index = getIndex(localNode.getId(), IDGenerator.hexStringToInt(nodeIdHex));
         List<Node> bucket = buckets.get(index);
         for (Node n : bucket) {
-            if (n.getId() == node.getId()) {
+            if (n.getId() == IDGenerator.hexStringToInt(nodeIdHex)) {
                 n.setLastSeenTimestamp(Instant.now().getEpochSecond());
                 return;
             }
         }
     }
-
-    /*
-    public static int getBucketRange(int index) {
-
-    }
-
-    public void ping(Node node) {
-        // update last seen time in routing table
-        // or just remove node if it does  not respond to 2 pings in a row
-    }
-
-    public static Node findNode(String nodeId) {
-
-    }
-
-     */
 
 
 
@@ -135,6 +131,15 @@ public class RoutingTable {
     public static Node getBootstrapNode() {
         return bootstrapNode;
     }
+
+    public static ArrayList<Node> getAllNodes() {
+        ArrayList<Node> allNodes = new ArrayList<>();
+        for (List<Node> bucket : buckets) {
+            allNodes.addAll(bucket);
+        }
+        return allNodes;
+    }
+
 
 
 

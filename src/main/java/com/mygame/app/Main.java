@@ -29,18 +29,22 @@ public class Main {
 
         ExecutorService executorService = Executors.newCachedThreadPool();
         UDPSender udpSender = new UDPSender();
-        UDPReceiver udpReceiver = new UDPReceiver();
-        RoutingTableUpdater RTUpdater = new RoutingTableUpdater();
+        RoutingTableUpdater RTUpdater = new RoutingTableUpdater(60000);
+        PingPongHandler pingPongHandler = new PingPongHandler(30000);
+
+        // putting this one last to give it reference to pingPongHandler
+        UDPReceiver udpReceiver = new UDPReceiver(pingPongHandler);
 
 
         executorService.submit(udpSender);
         executorService.submit(udpReceiver);
         executorService.submit(RTUpdater);
+        executorService.submit(pingPongHandler);
 
 
 
 
-        // trying to figure out matchmaking
+        // some CLI -.-'
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String str = scanner.nextLine();

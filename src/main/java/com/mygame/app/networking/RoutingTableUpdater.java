@@ -5,6 +5,11 @@ import java.util.Objects;
 
 public class RoutingTableUpdater extends Thread {
 
+    private int interval;
+
+    public RoutingTableUpdater(int interval) {
+        this.interval = interval;
+    }
 
     @Override
     public void run() {
@@ -19,8 +24,8 @@ public class RoutingTableUpdater extends Thread {
                 String localIp = RoutingTable.getLocalNode().getIp();
                 if (!Objects.equals(localIp, node.getIp())) {
                     UDPMessage message = new UDPMessage(
-                            RoutingTable.getLocalNode().getIdHex(),    // sender ID in HEX string
                             UDPProtocol.FIND_NODE,                     // message protocol
+                            RoutingTable.getLocalNode().getIdHex(),    // sender ID in HEX string
                             localIp,
                             node.getIp());
 
@@ -32,7 +37,7 @@ public class RoutingTableUpdater extends Thread {
 
 
             try {
-                sleep(120000);
+                sleep(interval);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

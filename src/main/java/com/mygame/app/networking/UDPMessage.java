@@ -7,52 +7,32 @@ import java.util.ArrayList;
 
 public class UDPMessage {
 
-    private UDPProtocol type;
-    private String sender_id;
-    private String sender_ip;
-    private String receiver_ip;
+    private final UDPProtocol type;
+    private final String sender_id;
+    private final String sender_ip;
+    private final String receiver_ip;
     private String target_id;       // can be usefully for getting random player
     private ArrayList<Node> nodes;
 
 
-    // FIND_NODE
-    public UDPMessage(String sender_id, UDPProtocol type, String sender_ip, String receiver_ip) {
+    // FIND_NODE / PING / PONG message layout
+    public UDPMessage(UDPProtocol type, String sender_id, String sender_ip, String receiver_ip) {
         this.type = type;
         this.sender_id = sender_id;
         this.sender_ip = sender_ip;
         this.receiver_ip = receiver_ip;
-        // unnecessary fields
-        this.target_id = null;
-        this.nodes = null;
     }
 
     // NODE_FOUND
-    public UDPMessage(String sender_id, UDPProtocol type, String sender_ip, String receiver_ip, ArrayList<Node> nodes) {
+    public UDPMessage(UDPProtocol type, String sender_id, String sender_ip, String receiver_ip, ArrayList<Node> nodes) {
         this.type = type;
         this.sender_id = sender_id;
-        this.target_id = null;
         this.sender_ip = sender_ip;
         this.receiver_ip = receiver_ip;
         this.nodes = nodes;
     }
 
-    // PING / PONG message layout
-    public UDPMessage(UDPProtocol type) {
-        this.type = type;
 
-    }
-
-
-    /*
-
-
-    {
-  "type": "ping",
-  "sender_id": "1234567890abcdef",
-  "sender_ip": "192.168.0.1",
-  "sender_port": 1234
-}
-     */
 
 
     public Node getNode() {
