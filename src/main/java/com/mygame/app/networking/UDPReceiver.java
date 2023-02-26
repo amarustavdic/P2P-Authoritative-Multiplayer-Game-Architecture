@@ -27,7 +27,7 @@ public class UDPReceiver extends Thread {
 
     @Override
     public void run() {
-
+        /*
         DatagramPacket DpReceive = null;
         while (true) {
             DpReceive = new DatagramPacket(inBuff, inBuff.length);
@@ -60,7 +60,6 @@ public class UDPReceiver extends Thread {
                     );
                     RoutingTable.add(senderNode);
 
-                    List<Node> closest = RoutingTable.getClosestNodes(senderNode,1);
                     UDPMessageHeader header = new UDPMessageHeader(
                             UDPProtocol.DISCOVERED_NODES,
                             RoutingTable.getLocalNode().getIp(),
@@ -90,6 +89,8 @@ public class UDPReceiver extends Thread {
             inBuff = new byte[65535];
         }
 
+
+         */
     }
 
     public static StringBuilder data(byte[] a) {
