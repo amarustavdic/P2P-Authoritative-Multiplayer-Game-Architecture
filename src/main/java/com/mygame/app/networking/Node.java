@@ -39,4 +39,12 @@ public class Node {
     public long getLastSeenTimestamp() {
         return lastSeenTimestamp;
     }
+
+    public void setLastSeenTimestamp(long lastSeenTimestamp) {
+        this.lastSeenTimestamp = lastSeenTimestamp;
+    }
+
+    public int getDistance(int nodeId) {
+        return id ^ nodeId;
+    }
 }

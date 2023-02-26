@@ -1,5 +1,6 @@
 package com.mygame.app.networking;
 
+import java.time.Instant;
 import java.util.*;
 
 public class RoutingTable {
@@ -43,28 +44,37 @@ public class RoutingTable {
         return true;
     }
 
-    public static void print() {
-        for (int i = 0; i < buckets.size(); i++) {
-            System.out.println("BUCKET " + i);
-            for (int j = 0; j < buckets.get(i).size(); j++) {
-                int id = buckets.get(i).get(j).getId();
-                System.out.print(id + "  ");
+    // k - number of the closest nodes retrieved
+    public static ArrayList<Node> getClosestNodes(int id, int k) {
+        ArrayList<Node> closestNodes = new ArrayList<Node>();
+        PriorityQueue<Node> pq = new PriorityQueue<Node>(Comparator.comparingInt(n -> n.getDistance(id)));
+        for (List<Node> bucket : buckets) {
+            for (Node node : bucket) {
+                if (node.getId() != localNode.getId()) {
+                    pq.offer(node);
+                }
             }
-            System.out.println();
+        }
+        while (!pq.isEmpty() && closestNodes.size() < k) {
+            closestNodes.add(pq.poll());
+        }
+        return closestNodes;
+    }
+
+    // I will see later what am I going to do about this one
+    // when I will actually need to use it
+    public static void updateLastSeen(Node node) {
+        int index = getIndex(localNode.getId(), node.getId());
+        List<Node> bucket = buckets.get(index);
+        for (Node n : bucket) {
+            if (n.getId() == node.getId()) {
+                n.setLastSeenTimestamp(Instant.now().getEpochSecond());
+                return;
+            }
         }
     }
 
-
     /*
-    // k - number of the closest nodes retrieved
-    public static ArrayList<Node> getClosestNodes(int id, int k) {
-
-    }
-
-    public static void updateLastSeen(Node node) {
-
-    }
-
     public static int getBucketRange(int index) {
 
     }
@@ -111,5 +121,22 @@ public class RoutingTable {
 
     public static Node getBootstrapNode() {
         return bootstrapNode;
+    }
+
+
+
+
+
+
+    // for testing purposes only
+    public static void print() {
+        for (int i = 0; i < buckets.size(); i++) {
+            System.out.println("BUCKET " + i);
+            for (int j = 0; j < buckets.get(i).size(); j++) {
+                int id = buckets.get(i).get(j).getId();
+                System.out.print(id + "  ");
+            }
+            System.out.println();
+        }
     }
 }
