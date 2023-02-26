@@ -6,14 +6,16 @@ import java.util.*;
 public class RoutingTable {
 
     // B / 2^K - used to calculate prefix length for a given bucket
-    private static final int B = 8;  // ID size in number of bits
-    private static final int K = 2;  // size of k-bucket (number of nodes it can store)
+    private static int B;  // ID size in number of bits
+    private static int K = 2;  // size of k-bucket (number of nodes it can store)
     private static List<List<Node>> buckets;
     private static Node localNode;
     private static Node bootstrapNode;
 
 
-    public static void init(Node local, Node boot) {
+    public static void init(Node local, Node boot, int B, int K) {
+        RoutingTable.B = B;
+        RoutingTable.K = K;
         localNode = local;
         bootstrapNode = boot;
         buckets = new ArrayList<>((int)Math.pow(2, K));
