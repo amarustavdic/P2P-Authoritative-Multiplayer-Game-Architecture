@@ -1,25 +1,49 @@
-package com.mygame.app.networking.messages;
+package com.mygame.app.networking;
 
 import com.google.gson.Gson;
 import com.mygame.app.networking.Node;
 import com.mygame.app.networking.UDPProtocol;
 
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UDPMessage {
 
-    private final UDPMessageHeader header;
-    private final UDPMessageBody body;
+    private String id;
+    private UDPProtocol type;
+    private String target;
+    private String sender;
+    private String receiver;
+    private ArrayList<Node> nodes;
 
-    public UDPMessage(UDPMessageHeader header, UDPMessageBody body) {
-        this.header = header;
-        this.body = body;
+
+    // this constructor is for
+    public UDPMessage(String id, UDPProtocol type, String sender, String receiver) {
+        this.id = id;
+        this.type = type;
+        this.target = null;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.nodes = null;
     }
 
 
+    public byte[] getBytes() {
+        return new Gson().toJson(this).getBytes();
+    }
 
+    public void print() {
+        System.out.println(new Gson().toJson(this));
+    }
+
+    public String getReceiver() {
+        return receiver;
+    }
+
+    /*
     public void print() {
         Gson gson = new Gson();
         String headerJson = gson.toJson(header);
@@ -64,4 +88,6 @@ public class UDPMessage {
     public List<Node> getNodes() {
         return body.getNodes();
     }
+
+     */
 }

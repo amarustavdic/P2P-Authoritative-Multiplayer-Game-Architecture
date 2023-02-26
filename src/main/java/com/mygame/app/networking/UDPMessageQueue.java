@@ -1,8 +1,5 @@
 package com.mygame.app.networking;
 
-import com.mygame.app.Constants;
-import com.mygame.app.networking.messages.UDPMessage;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +18,6 @@ public class UDPMessageQueue {
     }
 
     public static boolean isEmpty() {
-        System.out.println(Constants.BLUE + "Message Queue size: " + queue.size());
-        System.out.print(Constants.RESET);
         return queue.size() == 0;
     }
 

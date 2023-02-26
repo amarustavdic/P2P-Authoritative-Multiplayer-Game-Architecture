@@ -1,14 +1,12 @@
 package com.mygame.app.networking;
 
-import com.mygame.app.networking.messages.UDPMessage;
-
 import java.io.IOException;
 import java.net.*;
 
 public class UDPSender extends Thread {
 
-    private byte[] outBuf;
-    private DatagramSocket udpSocket;
+
+    private final DatagramSocket udpSocket;
 
     public UDPSender() throws SocketException {
         this.udpSocket = new DatagramSocket();
@@ -17,31 +15,34 @@ public class UDPSender extends Thread {
 
     @Override
     public void run() {
-        while (true) {
-            // for testing purposes to see easier what is happening
-            try {
-                sleep(20000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+        while (!UDPMessageQueue.isEmpty()) {
 
-            if (!UDPMessageQueue.isEmpty()) {
-                UDPMessage msg = UDPMessageQueue.getMessage();
-                outBuf = msg.getBytes();
 
-                DatagramPacket packet = new DatagramPacket(
-                        outBuf,
-                        outBuf.length,
-                        msg.getReceiverIP(),
-                        5000
-                );
+
+                UDPMessage message = UDPMessageQueue.getMessage();
+
+                DatagramPacket packet = null;
+                try {
+                    packet = new DatagramPacket(
+                            message.getBytes(),
+                            message.getBytes().length,
+                            InetAddress.getByName(message.getReceiver()),
+                            5000
+                    );
+                } catch (UnknownHostException e) {
+                    throw new RuntimeException(e);
+                }
                 try {
                     udpSocket.send(packet);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 System.out.print("Message sent: ");
-                msg.print();
+                message.print();
+            try {
+                sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }

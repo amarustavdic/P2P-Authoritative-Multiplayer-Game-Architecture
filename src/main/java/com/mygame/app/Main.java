@@ -27,11 +27,9 @@ public class Main {
 
 
         ExecutorService executorService = Executors.newCachedThreadPool();
-        //UDPReceiver udpReceiver = new UDPReceiver();
         UDPSender udpSender = new UDPSender();
         RoutingTableUpdater RTUpdater = new RoutingTableUpdater();
 
-        //executorService.submit(udpReceiver);
         executorService.submit(udpSender);
         executorService.submit(RTUpdater);
 
@@ -42,7 +40,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String str = scanner.nextLine();
-            if (str.equals("match")) {
+            if (str.equals("/discover")) {
 
             }
         }
