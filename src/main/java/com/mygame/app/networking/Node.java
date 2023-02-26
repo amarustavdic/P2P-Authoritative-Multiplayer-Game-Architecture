@@ -1,7 +1,5 @@
 package com.mygame.app.networking;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class Node {
 

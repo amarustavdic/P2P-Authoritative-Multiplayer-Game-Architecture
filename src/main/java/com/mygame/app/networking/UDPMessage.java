@@ -7,38 +7,58 @@ import java.util.ArrayList;
 
 public class UDPMessage {
 
-    private String id;
     private UDPProtocol type;
-    private String target;
-    private String sender;
-    private String receiver;
+    private String sender_id;
+    private String sender_ip;
+    private String receiver_ip;
+    private String target_id;       // can be usefully for getting random player
     private ArrayList<Node> nodes;
 
 
-    // this constructor is for ... lets say regular message
-    public UDPMessage(String id, UDPProtocol type, String sender, String receiver) {
-        this.id = id;
+    // FIND_NODE
+    public UDPMessage(String sender_id, UDPProtocol type, String sender_ip, String receiver_ip) {
         this.type = type;
-        this.target = null;
-        this.sender = sender;
-        this.receiver = receiver;
+        this.sender_id = sender_id;
+        this.sender_ip = sender_ip;
+        this.receiver_ip = receiver_ip;
+        // unnecessary fields
+        this.target_id = null;
         this.nodes = null;
     }
 
-    public UDPMessage(String id, UDPProtocol type, String sender, String receiver, ArrayList<Node> nodes) {
-        this.id = id;
+    // NODE_FOUND
+    public UDPMessage(String sender_id, UDPProtocol type, String sender_ip, String receiver_ip, ArrayList<Node> nodes) {
         this.type = type;
-        this.target = null;
-        this.sender = sender;
-        this.receiver = receiver;
+        this.sender_id = sender_id;
+        this.target_id = null;
+        this.sender_ip = sender_ip;
+        this.receiver_ip = receiver_ip;
         this.nodes = nodes;
     }
+
+    // PING / PONG message layout
+    public UDPMessage(UDPProtocol type) {
+        this.type = type;
+
+    }
+
+
+    /*
+
+
+    {
+  "type": "ping",
+  "sender_id": "1234567890abcdef",
+  "sender_ip": "192.168.0.1",
+  "sender_port": 1234
+}
+     */
 
 
     public Node getNode() {
         boolean boot = false;
-        if (id == RoutingTable.getBootstrapNode().getIdHex()) boot = true;
-        return new Node(id,sender,5000,boot, Instant.now().getEpochSecond());
+        if (sender_id == RoutingTable.getBootstrapNode().getIdHex()) boot = true;
+        return new Node(sender_id, sender_ip,5000,boot, Instant.now().getEpochSecond());
     }
 
     public ArrayList<Node> getNodes() {
@@ -49,24 +69,24 @@ public class UDPMessage {
         return new Gson().toJson(this).getBytes();
     }
 
-    public String getSender() {
-        return sender;
+    public String getSender_ip() {
+        return sender_ip;
     }
 
     public void print() {
         System.out.println(new Gson().toJson(this));
     }
 
-    public String getReceiver() {
-        return receiver;
+    public String getReceiver_ip() {
+        return receiver_ip;
     }
 
     public UDPProtocol getType() {
         return type;
     }
 
-    public String getId() {
-        return id;
+    public String getSender_id() {
+        return sender_id;
     }
 
     /*

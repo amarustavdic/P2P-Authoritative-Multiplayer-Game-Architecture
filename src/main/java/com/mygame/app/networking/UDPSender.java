@@ -24,7 +24,7 @@ public class UDPSender extends Thread {
                     packet = new DatagramPacket(
                             message.getBytes(),
                             message.getBytes().length,
-                            InetAddress.getByName(message.getReceiver()),
+                            InetAddress.getByName(message.getReceiver_ip()),
                             5000
                     );
                 } catch (UnknownHostException e) {

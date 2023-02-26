@@ -4,9 +4,8 @@ public enum UDPProtocol {
 
     PING,
     PONG,
-    DISCOVER_NODES,
     FIND_NODE,
-    DISCOVERED_NODES,
+    NODE_FOUND,
     FIND_MATCH_CANDIDATES,
 
 

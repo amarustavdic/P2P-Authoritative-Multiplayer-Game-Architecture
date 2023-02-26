@@ -1,6 +1,7 @@
 package com.mygame.app.networking;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class RoutingTableUpdater extends Thread {
 
@@ -16,7 +17,7 @@ public class RoutingTableUpdater extends Thread {
 
             for (Node node : kNodes) {
                 String localIp = RoutingTable.getLocalNode().getIp();
-                if (localIp != node.getIp()) {
+                if (!Objects.equals(localIp, node.getIp())) {
                     UDPMessage message = new UDPMessage(
                             RoutingTable.getLocalNode().getIdHex(),    // sender ID in HEX string
                             UDPProtocol.FIND_NODE,                     // message protocol
@@ -31,7 +32,7 @@ public class RoutingTableUpdater extends Thread {
 
 
             try {
-                sleep(30000);
+                sleep(120000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

@@ -37,20 +37,20 @@ public class UDPReceiver extends Thread {
             switch (message.getType()) {
                 case FIND_NODE:
                     System.out.println("Find node message received!");
-                    String receiver = message.getSender();
+                    String receiver = message.getSender_ip();
                     Node n = message.getNode();
                     System.out.println("ID of reconstruated node: " + n.getIdHex());
                     RoutingTable.add(n);
                     UDPMessage reply = new UDPMessage(
                             RoutingTable.getLocalNode().getIdHex(),
-                            UDPProtocol.DISCOVERED_NODES,
+                            UDPProtocol.NODE_FOUND,
                             RoutingTable.getBootstrapNode().getIp(),
                             receiver,
-                            RoutingTable.getClosestNodes(IDGenerator.hexStringToInt(message.getId()), 3)
+                            RoutingTable.getClosestNodes(IDGenerator.hexStringToInt(message.getSender_id()), 3)
                     );
                     UDPMessageQueue.addMessage(reply);
                     break;
-                case DISCOVERED_NODES:
+                case NODE_FOUND:
                     System.out.println("Got discovered nodes!");
                     for (Node node : message.getNodes()) {
                         RoutingTable.add(node);
