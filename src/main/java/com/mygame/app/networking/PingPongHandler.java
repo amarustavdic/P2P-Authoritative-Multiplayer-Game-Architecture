@@ -25,6 +25,9 @@ public class PingPongHandler extends Thread {
                 throw new RuntimeException(e);
             }
             // here add function to remove all nodes that did not reply with PONG message
+            // to make it more reliable, could change it to this:
+            //      Node get only deleted if it does not reply to two consecutive PING messages
+            //      in case if firs UDP message don't make it to the end node
             if (PingedList.pinged.size() != 0) {
                 ArrayList<Node> noReplyNodes = PingedList.pinged;
                 for (Node node : noReplyNodes) {
