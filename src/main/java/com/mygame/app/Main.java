@@ -5,7 +5,6 @@ import com.mygame.app.ui.MainFrame;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +43,7 @@ public class Main {
 
 
         // GUI
-        MainFrame.init();
+        new MainFrame();
 
 
         // some CLI -.-'
