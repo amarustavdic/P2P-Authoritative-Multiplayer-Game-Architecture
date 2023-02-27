@@ -1,6 +1,7 @@
 package com.mygame.app;
 
 import com.mygame.app.networking.*;
+import com.mygame.app.ui.MainFrame;
 
 import java.io.IOException;
 import java.net.*;
@@ -42,6 +43,8 @@ public class Main {
         executorService.submit(pingPongHandler);
 
 
+        // GUI
+        MainFrame.init();
 
 
         // some CLI -.-'
