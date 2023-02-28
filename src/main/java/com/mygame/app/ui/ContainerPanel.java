@@ -29,4 +29,12 @@ public class ContainerPanel extends JPanel {
     public CardLayout getCardLayout() {
         return cardLayout;
     }
+
+    public MenuPanel getMenuPanel() {
+        return menuPanel;
+    }
+
+    public GamePanel getGamePanel() {
+        return gamePanel;
+    }
 }

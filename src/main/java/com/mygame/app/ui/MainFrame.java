@@ -5,8 +5,8 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
 
-    private final int WIDTH = 660;
-    private final int HEIGHT = 507;
+    private final int WIDTH = 640;
+    private final int HEIGHT = 502;
     private final ContainerPanel containerPanel;
 
 
@@ -15,7 +15,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         //setUndecorated(true);
-        //setResizable(false);
+        setResizable(false);
         setVisible(true);
 
         containerPanel = new ContainerPanel();

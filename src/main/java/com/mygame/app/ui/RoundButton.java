@@ -3,6 +3,7 @@ import java.awt.*;
 import javax.swing.*;
 public class RoundButton extends JButton {
     private int radius;
+    private int index;
 
     public RoundButton(int radius) {
         this.radius = radius;
@@ -31,4 +32,11 @@ public class RoundButton extends JButton {
         return new Dimension(radius * 2, radius * 2);
     }
 
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
 }

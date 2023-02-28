@@ -1,5 +1,6 @@
 package com.mygame.app.ui;
 
+import com.mygame.app.game.GameLogic;
 import org.w3c.dom.css.RGBColor;
 
 import javax.imageio.ImageIO;
@@ -7,6 +8,8 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -42,7 +45,17 @@ public class MenuPanel extends JPanel {
         Dimension btnSize = new Dimension(220, 50);
         JButton[] buttons = new JButton[3];
         buttons[0] = new JButton("PLAY VS COMPUTER");
-        buttons[0].addActionListener(e -> containerPanel.getCardLayout().show(containerPanel, "game"));
+        buttons[0].addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                containerPanel.getCardLayout().show(containerPanel, "game");
+                GameLogic.init();
+                containerPanel.getGamePanel().setUpOtherPlayer(GameLogic.getP2Color(), "Computer");
+                containerPanel.getGamePanel().setUpLocalPlayer(GameLogic.getP1Color(), "Amar Ustavdic");
+                containerPanel.getGamePanel().nextToMove(GameLogic.getNextTurn());
+
+            }
+        });
         buttons[1] = new JButton("PLAY ONLINE");
         buttons[2] = new JButton("EXIT GAME");
 
