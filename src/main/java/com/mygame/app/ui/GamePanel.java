@@ -11,6 +11,7 @@ public class GamePanel extends JPanel {
     private PlayerInfo localPlayer;
     private PlayerInfo otherPlayer;
     private Droppers droppers;
+    private Chat chat;
 
     public GamePanel(ContainerPanel containerPanel) {
         this.containerPanel = containerPanel;
@@ -35,7 +36,7 @@ public class GamePanel extends JPanel {
         otherControls.setBackground(Color.decode("#0A0908"));
         otherControls.setPreferredSize(new Dimension(240,465));
 
-        Chat chat = new Chat();
+        chat = new Chat();
         chat.setPreferredSize(new Dimension(230, 180));
         chat.setBorder(new EmptyBorder(0, 10, 0, 10));
         otherControls.add(chat, BorderLayout.SOUTH);
@@ -86,4 +87,7 @@ public class GamePanel extends JPanel {
         droppers.setNEXT_TURN(color);
     }
 
+    public Chat getChat() {
+        return chat;
+    }
 }

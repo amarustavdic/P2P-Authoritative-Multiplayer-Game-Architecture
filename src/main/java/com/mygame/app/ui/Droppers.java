@@ -48,18 +48,25 @@ public class Droppers extends JPanel {
         public void mouseClicked(MouseEvent e) {
             RoundButton dropper = (RoundButton) e.getSource();
             try {
-                gameGrid.animateMove(dropper.getIndex(), NEXT_TURN);
+                if (gameGrid.animateMove(dropper.getIndex(), NEXT_TURN)) {
+                    if (GameLogic.hasFourInARow()) System.out.println(NEXT_TURN + " won! 1");
+                    if (NEXT_TURN == 'r') NEXT_TURN = 'y';
+                    else NEXT_TURN = 'r';
+                }
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            if (NEXT_TURN == 'r') NEXT_TURN = 'y';
-            else NEXT_TURN = 'r';
+
+
+
+
             Timer timer = new Timer(4000, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
                         int j = GameLogic.computerMove();
                         if (gameGrid.animateMove(j, NEXT_TURN)) {
+                            if (GameLogic.hasFourInARow()) System.out.println(NEXT_TURN + " won! 2");
                             if (NEXT_TURN == 'r') NEXT_TURN = 'y';
                             else NEXT_TURN = 'r';
                             ((Timer)e.getSource()).stop();

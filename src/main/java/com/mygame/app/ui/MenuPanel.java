@@ -53,6 +53,7 @@ public class MenuPanel extends JPanel {
                 containerPanel.getGamePanel().setUpOtherPlayer(GameLogic.getP2Color(), "Computer");
                 containerPanel.getGamePanel().setUpLocalPlayer(GameLogic.getP1Color(), "Amar Ustavdic");
                 containerPanel.getGamePanel().nextToMove(GameLogic.getNextTurn());
+                containerPanel.getGamePanel().getChat().setVisible(false);
 
             }
         });
