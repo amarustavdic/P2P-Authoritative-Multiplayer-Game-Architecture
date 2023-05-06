@@ -24,6 +24,8 @@
     </dependencies>
 
 
+
+
     <build>
         <plugins>
             <plugin>
@@ -49,6 +51,16 @@
                 </executions>
             </plugin>
         </plugins>
+
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>fonts/**</include>
+                </includes>
+            </resource>
+        </resources>
 
     </build>
 

@@ -10,16 +10,10 @@ public class GameUI extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setResizable(false);
 
-
-        //LoadingScreen loadingScreen = new LoadingScreen(1020,640);
-        //this.add(loadingScreen);
-
-        //Menu menu = new Menu(1020,640);
-        //this.add(menu);
+        MainView mainView = new MainView(800, 550);
 
 
-        this.add(new Board());
-
+        this.add(mainView);
 
         this.pack();
         this.setVisible(true);
