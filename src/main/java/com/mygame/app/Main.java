@@ -1,10 +1,8 @@
 package com.mygame.app;
 
 import com.mygame.app.networking.*;
-import com.mygame.app.ui.Board;
 import com.mygame.app.ui.GameUI;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;

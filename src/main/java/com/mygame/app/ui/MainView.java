@@ -1,12 +1,18 @@
 package com.mygame.app.ui;
 
+import com.google.common.eventbus.EventBus;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 
 
 public class MainView extends JPanel {
+    private EventBus eventBus;
+    private boolean isVisibile;
 
     private final Color shipColor = new Color(131, 131, 131);
     private final Color shipDarkColor = new Color(80, 80, 80);
@@ -14,7 +20,10 @@ public class MainView extends JPanel {
     private final int shipTileHeight = 40;
 
 
-    public MainView(int width, int height) {
+    public MainView(int width, int height, EventBus eventBus) {
+        this.eventBus = eventBus;
+        this.isVisibile = true;
+        this.setVisible(isVisibile);
         this.setPreferredSize(new Dimension(width,height));
         this.setSize(new Dimension(width, height));
 
@@ -50,6 +59,13 @@ public class MainView extends JPanel {
         label2.setForeground(new Color(27, 74, 255));
 
         JButton singleBtn = new JButton("Single player");
+        singleBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                publishMessage(new EventMessage(EventType.SINGLE_PLAYER_BTN));
+                isVisibile = false;
+            }
+        });
         JButton multiBtn = new JButton("Multiplayer");
 
         Font btnFont = new Font("Arial",Font.BOLD,27);
@@ -185,8 +201,13 @@ public class MainView extends JPanel {
             g2d.fillOval(shipDetailX, shipDetailY, shipTileWidth/2, shipTileHeight/2);
         }
 
+    }
 
 
 
+
+    // publishing message to eventbus
+    public void publishMessage(EventMessage eventMessage) {
+        eventBus.post(eventMessage);
     }
 }

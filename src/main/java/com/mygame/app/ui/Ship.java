@@ -3,14 +3,19 @@ package com.mygame.app.ui;
 import java.awt.*;
 
 public class Ship {
-    public int x, y, width, height;
+    public int x;
+    public int y;
+    public int width;
+    public int height;
+    public int length;
+    public int tileWidth;
+    public int tileHeight;
     public boolean isDragging;
 
-    public Ship(int x, int y, int width, int height) {
+    public Ship(int x, int y, int length) {
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
+        this.length = length;
         this.isDragging = false;
     }
 
