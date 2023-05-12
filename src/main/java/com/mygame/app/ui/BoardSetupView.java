@@ -9,54 +9,41 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class BoardSetupView extends JPanel {
-    private EventBus eventBus;
+    private final EventBus eventBus;
+    private final int boardTileSideLength = 40;
+    private final int fontSize = 20;
+    private final int spacing = 5;
+    private final int width;
+    private final int height;
+    private final int repaintAreaMultiplier = 15;
 
-    private static final int DRAG_SIZE_CHANGE = 10;
     private Point mousePosition;
-    ArrayList<Ship> ships = new ArrayList<>();
-
-    private final Color shipColor = new Color(131, 131, 131);
-    private final Color shipDarkColor = new Color(80, 80, 80);
-    private final int shipTileWidth = 40;
-    private final int shipTileHeight = 40;
-    private int fontSize = 20;
-    private int tileWidth = 40;
-    private int tileHeight = 40;
-    private int spacing = 2;
-    private int width;
-    private int height;
+    private ArrayList<Ship> ships = new ArrayList<>();
+    //                            x, y, shipyardWidth, shipyardHeight
+    //private int[] shipyardArea = {,}
 
 
     public BoardSetupView(int with, int height, EventBus eventBus) {
+        this.setBackground(new Color(208, 236, 255));
         this.width = with;
         this.height = height;
+        this.setPreferredSize(new Dimension(with,height));
+        generateShips();
         this.eventBus = eventBus;
         eventBus.register(this);  // subscribe to eventbus
 
 
-        ships.add(new Ship(tileWidth*13, tileHeight, 4));
-        ships.add(new Ship(tileWidth*17+spacing, tileHeight, 2));
-        ships.add(new Ship(tileWidth*13, 2*tileHeight+spacing, 1));
-        ships.add(new Ship(tileWidth*14+spacing, 2*tileHeight+spacing, 5));
-        ships.add(new Ship(tileWidth*13, 3*tileHeight+2*spacing, 3));
-        ships.add(new Ship(tileWidth*16+spacing, 3*tileHeight+2*spacing, 3));
-
-
-
-
-
-
-
-
-        addMouseListener(new MouseAdapter() {
+        this.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 mousePosition = e.getPoint();
-                // for more ships quick test
                 for (Ship ship : ships) {
                     if (ship.contains(mousePosition)) {
                         setCursor(new Cursor(Cursor.MOVE_CURSOR));
-                        ship.isDragging = true;
-                        repaint();
+                        ship.setDragging(true);
+                        repaint(ship.getX() - repaintAreaMultiplier * spacing,
+                                ship.getY() - repaintAreaMultiplier *spacing,
+                                ship.getWidth() + 2 * repaintAreaMultiplier * spacing,
+                                ship.getHeight() + 2 * repaintAreaMultiplier * spacing);
                         break;
                     }
                 }
@@ -65,13 +52,16 @@ public class BoardSetupView extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 mousePosition = e.getPoint();
                 for (Ship ship : ships) {
-                    if (ship.isDragging) {
-                        ship.isDragging = false;
+                    if (ship.isDragging()) {
+                        ship.setDragging(false);
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                        int snapX = snapToGrid(ship.x, tileWidth + spacing);
-                        int snapY = snapToGrid(ship.y, tileHeight + spacing);
+                        int snapX = snapToGrid(ship.getX(), boardTileSideLength + spacing);
+                        int snapY = snapToGrid(ship.getY(), boardTileSideLength + spacing);
                         ship.setLocation(snapX, snapY);
-                        repaint();
+                        repaint(ship.getX() - repaintAreaMultiplier * spacing,
+                                ship.getY() - repaintAreaMultiplier * spacing,
+                                ship.getWidth() + 2 * repaintAreaMultiplier * spacing,
+                                ship.getHeight() + 2 * repaintAreaMultiplier * spacing);
                     }
                 }
             }
@@ -81,19 +71,31 @@ public class BoardSetupView extends JPanel {
             }
         });
 
-        addMouseMotionListener(new MouseAdapter() {
+        this.addMouseMotionListener(new MouseAdapter() {
             public void mouseDragged(MouseEvent e) {
                 mousePosition = e.getPoint();
                 for (Ship ship : ships) {
-                    if (ship.isDragging) {
-                        ship.x = mousePosition.x;
-                        ship.y = mousePosition.y;
+                    if (ship.isDragging()) {
+                        ship.setX(mousePosition.x - ship.getWidth()/2);
+                        ship.setY(mousePosition.y - ship.getHeight()/2);
+                        repaint(ship.getX() - repaintAreaMultiplier * spacing,
+                                ship.getY() - repaintAreaMultiplier * spacing,
+                                ship.getWidth() + 2 * repaintAreaMultiplier * spacing,
+                                ship.getHeight() + 2 * repaintAreaMultiplier * spacing);
                         break;
                     }
                 }
-                repaint();
             }
         });
+
+
+        // experimenting with custom components
+        BoardTile boardTile = new BoardTile();
+        boardTile.setVisible(true);
+        boardTile.setBounds(400,400,100,100);
+        add(boardTile);
+
+
 
     }
 
@@ -104,54 +106,32 @@ public class BoardSetupView extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-
-        // getting graphics from buffer, to render some additional things
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setColor(new Color(208, 236, 255));
-        g2d.fillRect(0,0,width,height);
-
 
         drawTiles(g2d);
         drawCoordinates(g2d);
         drawShipyard(g2d);
-
-
-
-
-
-        /*
-        for (Ship ship : ships) {
-            g2d.setColor(Color.GRAY);
-            g2d.fillRoundRect(ship.x, ship.y, ship.width-spacing, ship.height, 15, 15);
-        }
-
-         */
-
-
-
-        g2d.dispose();
     }
 
 
-    private void drawCoordinates(Graphics2D bufferedGraphics) {
-
-        bufferedGraphics.setColor(new Color(47, 47, 47));
+    private void drawCoordinates(Graphics2D g) {
+        g.setColor(new Color(47, 47, 47));
         Font font = new Font("Impact", Font.BOLD, fontSize);
-        bufferedGraphics.setFont(font);
+        g.setFont(font);
         // coordinates for columns
         for (int i = 0; i < 10; i++) {
             String coord = Character.toString((char) ('A' + i));
-            int x = (tileWidth+spacing) * (i+1) + (tileWidth - bufferedGraphics.getFontMetrics().stringWidth(coord)) / 2;
-            int y = tileHeight - (tileHeight - font.getSize()) / 2 - bufferedGraphics.getFontMetrics().getDescent();
-            bufferedGraphics.drawString(coord, x, y);
+            int x = (boardTileSideLength+spacing) * (i+1) + (boardTileSideLength - g.getFontMetrics().stringWidth(coord)) / 2;
+            int y = boardTileSideLength - (boardTileSideLength - font.getSize()) / 2 - g.getFontMetrics().getDescent();
+            g.drawString(coord, x, y);
         }
 
         // coordinates for rows
         for (int i = 0; i < 10; i++) {
             String coord = Integer.toString(i+1);
-            int x = (tileWidth - bufferedGraphics.getFontMetrics().stringWidth(coord)) / 2;
-            int y = (tileHeight+spacing) * (i+2) - (tileHeight - font.getSize()) / 2 - bufferedGraphics.getFontMetrics().getDescent();
-            bufferedGraphics.drawString(coord, x, y);
+            int x = (boardTileSideLength - g.getFontMetrics().stringWidth(coord)) / 2;
+            int y = (boardTileSideLength+spacing) * (i+2) - (boardTileSideLength - font.getSize()) / 2 - g.getFontMetrics().getDescent();
+            g.drawString(coord, x, y);
         }
     }
 
@@ -159,35 +139,44 @@ public class BoardSetupView extends JPanel {
         bufferedGraphics.setColor(new Color(145, 176, 253));
         for (int i = 1; i < 11; i++) {
             for (int j = 1; j < 11; j++) {
-                int x = i * (tileWidth + spacing);
-                int y = j * (tileHeight + spacing);
-                bufferedGraphics.fillRoundRect(x, y, tileWidth, tileHeight, 15, 15);
+                int x = i * (boardTileSideLength + spacing);
+                int y = j * (boardTileSideLength + spacing);
+                bufferedGraphics.fillRoundRect(x, y, boardTileSideLength, boardTileSideLength, 15, 15);
             }
         }
     }
 
     private void drawShipyard(Graphics2D g) {
         Font font = new Font("Impact", Font.BOLD, fontSize);
-        int y = tileHeight - (tileHeight - font.getSize()) / 2 - g.getFontMetrics().getDescent();
+        int y = boardTileSideLength - (boardTileSideLength - font.getSize()) / 2 - g.getFontMetrics().getDescent();
         g.drawString("SHIPYARD",590, y);
 
         // drawing ships in shipyard
         for (Ship ship : ships) {
-            ship.width = ship.length*(shipTileWidth+spacing)-spacing;
-            ship.height = shipTileHeight;
-            ship.tileWidth = shipTileWidth;
-            ship.tileHeight = tileHeight;
 
-            g.setColor(shipColor);
-            g.fillRoundRect(ship.x, ship.y, ship.width, ship.height,15,15);
-            g.setColor(shipDarkColor);
-            for (int i = 0; i < ship.length; i++) {
-                int shipDetailX = (i * ship.tileWidth) + ship.x + ship.tileWidth/4;
-                int shipDetailY = ship.tileHeight/4 + ship.y;
-                g.fillOval(shipDetailX, shipDetailY, ship.tileWidth/2, ship.tileHeight/2);
+            g.setColor(ship.getShipColor());
+            g.fillRoundRect(ship.getX(), ship.getY(), ship.getWidth(), ship.getHeight(),15,15);
+            g.setColor(ship.getHitMarkerColor());
+            for (int i = 0; i < ship.getShipLength(); i++) {
+                int markerOffset = boardTileSideLength + spacing;
+                int vertOffset = boardTileSideLength / 4;
+                int shipDetailX = (i * markerOffset) + ship.getX() + vertOffset;
+                int shipDetailY = vertOffset + ship.getY();
+                g.fillOval(shipDetailX, shipDetailY, boardTileSideLength/2, boardTileSideLength/2);
             }
         }
 
+    }
+
+
+
+    private void generateShips() {
+        ships.add(new Ship(boardTileSideLength*13, boardTileSideLength, 4, boardTileSideLength, spacing));
+        ships.add(new Ship(boardTileSideLength*17+spacing, boardTileSideLength, 2, boardTileSideLength,spacing));
+        ships.add(new Ship(boardTileSideLength*13, 2*boardTileSideLength+spacing, 1, boardTileSideLength, spacing));
+        ships.add(new Ship(boardTileSideLength*14+spacing, 2*boardTileSideLength+spacing, 5, boardTileSideLength, spacing));
+        ships.add(new Ship(boardTileSideLength*13, 3*boardTileSideLength+2*spacing, 3, boardTileSideLength, spacing));
+        ships.add(new Ship(boardTileSideLength*16+spacing, 3*boardTileSideLength+2*spacing, 3, boardTileSideLength, spacing));
     }
 
 

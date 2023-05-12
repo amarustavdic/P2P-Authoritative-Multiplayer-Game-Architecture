@@ -2,22 +2,22 @@ package com.mygame.app.ui;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-
 import javax.swing.*;
 
 
 public class GameUI extends JFrame {
 
     private final EventBus eventBus;
-    private JPanel currentPanel;
+    private JComponent currentPanel;
     private final int WIDTH = 800;
-    private final int HEIGHT = 550;
+    private final int HEIGHT = 600;
 
 
 
     public GameUI() {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setResizable(false);
+
         this.eventBus = new EventBus();
         eventBus.register(this);
 
@@ -28,8 +28,8 @@ public class GameUI extends JFrame {
         this.setContentPane(currentPanel);
 
         this.pack();
+        this.setLocationRelativeTo(null);
         this.setVisible(true);
-
     }
 
 
