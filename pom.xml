@@ -20,8 +20,15 @@
             <artifactId>gson</artifactId>
             <version>2.10</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.1-jre</version>
+        </dependency>
     </dependencies>
+
+
 
 
     <build>
@@ -49,6 +56,16 @@
                 </executions>
             </plugin>
         </plugins>
+
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>fonts/**</include>
+                </includes>
+            </resource>
+        </resources>
 
     </build>
 
