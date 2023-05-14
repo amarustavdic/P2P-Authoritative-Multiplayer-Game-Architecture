@@ -81,7 +81,26 @@ public class ShipComponent extends JComponent {
             public void mouseReleased(MouseEvent e) {
                 // Bring the component back to its original Z-order
                 Container parent = getParent();
-                parent.setComponentZOrder(me, parent.getComponentCount() - 1);
+                //parent.setComponentZOrder(me, parent.getComponentCount() - 1);
+
+                // Check if the released position is above the GridComponent
+                Component[] components = parent.getComponents();
+                for (Component component : components) {
+                    if (component instanceof GridComponent) {
+                        GridComponent grid = (GridComponent) component;
+
+                        // Calculate the snapped position
+                        // NEED SOME POLISHING!!!
+                        int gX = grid.getX() + tileSideLength + spacing;
+                        int gY = grid.getY() + tileSideLength + spacing;
+                        int snapX = (getLocation().x - gX) / (tileSideLength + spacing) * (tileSideLength + spacing) + gX;
+                        int snapY = (getLocation().y - gY) / (tileSideLength + spacing) * (tileSideLength + spacing) + gY;
+
+                        // Set the snapped position
+                        setLocation(snapX, snapY);
+                        break;
+                    }
+                }
             }
 
             @Override

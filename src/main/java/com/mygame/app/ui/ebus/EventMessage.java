@@ -1,4 +1,4 @@
-package com.mygame.app.ui;
+package com.mygame.app.ui.ebus;
 
 public class EventMessage {
     private EventType eventType;

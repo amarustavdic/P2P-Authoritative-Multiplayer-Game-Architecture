@@ -1,6 +1,8 @@
 package com.mygame.app.ui;
 
 import com.google.common.eventbus.EventBus;
+import com.mygame.app.ui.ebus.EventMessage;
+import com.mygame.app.ui.ebus.EventType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +60,8 @@ public class MainView extends JPanel {
         label2.setFont(new Font("Arial",Font.PLAIN,20));
         label2.setForeground(new Color(27, 74, 255));
 
-        JButton singleBtn = new JButton("Single player");
+        JButton singleBtn = new JButton("Online");
+        //
         singleBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -66,7 +69,7 @@ public class MainView extends JPanel {
                 isVisibile = false;
             }
         });
-        JButton multiBtn = new JButton("Multiplayer");
+        JButton multiBtn = new JButton("Versus bot");
 
         Font btnFont = new Font("Arial",Font.BOLD,27);
         singleBtn.setPreferredSize(new Dimension(300,70));
