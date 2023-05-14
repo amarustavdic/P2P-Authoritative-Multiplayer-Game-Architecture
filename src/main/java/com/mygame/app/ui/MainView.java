@@ -16,8 +16,8 @@ public class MainView extends JPanel {
     private EventBus eventBus;
     private boolean isVisibile;
 
-    private final Color shipColor = new Color(131, 131, 131);
-    private final Color shipDarkColor = new Color(80, 80, 80);
+    private final Color shipColor = GUIConstants.SHIP_SECONDARY_COLOR;
+    private final Color shipDarkColor = GUIConstants.SHIP_PRIMARY_COLOR;
     private final int shipTileWidth = 40;
     private final int shipTileHeight = 40;
 
@@ -32,7 +32,7 @@ public class MainView extends JPanel {
         GridBagLayout gbl = new GridBagLayout();
         this.setLayout(gbl);
 
-        this.setBackground(Color.BLACK);
+        this.setBackground(GUIConstants.BACKGROUND_COLOR);
 
 
         ClassLoader classLoader = MainView.class.getClassLoader();
@@ -47,12 +47,12 @@ public class MainView extends JPanel {
         }
 
 
-        JLabel title = new JLabel("BATTLESHIP");
+        JLabel title = new JLabel("ChainBattles");
         JLabel label1 = new JLabel("THE CLASSIC NAVAL COMBAT GAME");
         JLabel label2 = new JLabel("DECENTRALIZED EDITION");
 
         title.setFont(customFont);
-        title.setForeground(Color.WHITE);
+        title.setForeground(GUIConstants.FONT_COLOR);
 
         label1.setFont(new Font("Arial",Font.PLAIN,20));
         label1.setForeground(new Color(252, 203, 42));
@@ -76,12 +76,12 @@ public class MainView extends JPanel {
         singleBtn.setForeground(Color.WHITE);
         singleBtn.setFont(btnFont);
         singleBtn.setFocusable(false);
-        singleBtn.setBackground(new Color(166, 166, 166));
+        singleBtn.setBackground(GUIConstants.PRIMARY_BUTTON_COLOR);
         multiBtn.setPreferredSize(new Dimension(300, 70));
         multiBtn.setForeground(Color.WHITE);
         multiBtn.setFont(btnFont);
         multiBtn.setFocusable(false);
-        multiBtn.setBackground(new Color(166, 166, 166));
+        multiBtn.setBackground(GUIConstants.PRIMARY_BUTTON_COLOR);
 
 
 

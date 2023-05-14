@@ -136,13 +136,13 @@ public class ShipComponent extends JComponent {
         // Paint on the buffer
         g2Buffer.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2Buffer.setColor(new Color(47, 47, 47));
+        g2Buffer.setColor(GUIConstants.SHIP_SECONDARY_COLOR);
         g2Buffer.fillRoundRect(0, 0, getWidth(), getHeight(), arcWidth, arcHeight);
         for (int i = 0; i < shipLength; i++) {
             if (!hitVector[i]) {
-                g2Buffer.setColor(new Color(208, 208, 208));
+                g2Buffer.setColor(GUIConstants.SHIP_PRIMARY_COLOR);
             } else {
-                g2Buffer.setColor(new Color(201, 0, 0));
+                g2Buffer.setColor(GUIConstants.SHIP_HIT_COLOR);
             }
             int shipDetailX = 0;
             int shipDetailY = 0;
