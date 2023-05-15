@@ -67,9 +67,7 @@ public class GameUI extends JFrame {
             shipComponents[8] = new ShipComponent(10+gridComponent.getWidth()+42*4, 330, 1);
             shipComponents[9] = new ShipComponent(10+gridComponent.getWidth()+42*3, 330, 1);
 
-            shipComponents[3].setHitVector(new boolean[] {true, false});
-            shipComponents[7].setHitVector(new boolean[] {true});
-            shipComponents[1].setHitVector(new boolean[] {true, false, true});
+
 
 
             for (ShipComponent shipComponent : shipComponents) {

@@ -2,10 +2,8 @@ package com.mygame.app.ui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import javax.swing.*;
-import javax.swing.border.*;
 
 public class ShipComponent extends JComponent {
 
@@ -13,8 +11,10 @@ public class ShipComponent extends JComponent {
     private volatile int screenY = 0;
     private volatile int myX = 0;
     private volatile int myY = 0;
-    private int width = 80;
-    private int height = 80;
+    private volatile int prevX = 0;
+    private volatile int prexY = 0;
+    private int shipWidth = 80;
+    private int shipHeight = 80;
     private int arcWidth = 20; // Round rectangle arc width
     private int arcHeight = 20; // Round rectangle arc height
 
@@ -23,6 +23,7 @@ public class ShipComponent extends JComponent {
     private int shipLength = 0;
 
     private boolean isNormalOrientation = true;
+    private boolean wasDragged = false;
     private boolean[] hitVector;
 
 
@@ -33,17 +34,23 @@ public class ShipComponent extends JComponent {
         screenX = x;
         screenY = y;
         this.shipLength = shipLength;
-        this.width = shipLength * (tileSideLength + spacing) - spacing;
-        this.height = tileSideLength;
+        this.shipWidth = shipLength * (tileSideLength + spacing) - spacing;
+        this.shipHeight = tileSideLength;
         this.hitVector = new boolean[shipLength];
         //setBorder(new LineBorder(Color.BLUE, 3));
         //setBackground(Color.WHITE);
-        setBounds(x, y, width, height);
+        setBounds(x, y, shipWidth, shipHeight);
         setOpaque(false);
-
 
         // this needs to be done properly, NOT LIKE THIS!!!, it was a quick fix only
         this.me = this;
+
+
+
+
+
+
+
 
         addMouseListener(new MouseListener() {
 
@@ -51,12 +58,12 @@ public class ShipComponent extends JComponent {
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     // Right button is pressed
-                    int temp = width;
-                    width = height;
-                    height = temp;
+                    int temp = shipWidth;
+                    shipWidth = shipHeight;
+                    shipHeight = temp;
 
                     // Update the bounds of the component with the new width and height
-                    setBounds(getX(), getY(), width, height);
+                    setBounds(getX(), getY(), shipWidth, shipHeight);
 
                     isNormalOrientation = !isNormalOrientation;
                     // Repaint the component to reflect the changes
@@ -69,8 +76,9 @@ public class ShipComponent extends JComponent {
                 screenX = e.getXOnScreen();
                 screenY = e.getYOnScreen();
 
-                myX = getX();
-                myY = getY();
+                myX = prevX = getX();
+                myY = prexY = getY();
+
 
                 // Bring the component to the front
                 Container parent = getParent();
@@ -79,9 +87,10 @@ public class ShipComponent extends JComponent {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                // Bring the component back to its original Z-order
+                if (!wasDragged) {
+                    return;
+                }
                 Container parent = getParent();
-                //parent.setComponentZOrder(me, parent.getComponentCount() - 1);
 
                 // Check if the released position is above the GridComponent
                 Component[] components = parent.getComponents();
@@ -90,18 +99,36 @@ public class ShipComponent extends JComponent {
                         GridComponent grid = (GridComponent) component;
 
                         // Calculate the snapped position
-                        // NEED SOME POLISHING!!!
-                        int gX = grid.getX() + tileSideLength + spacing;
-                        int gY = grid.getY() + tileSideLength + spacing;
-                        int snapX = (getLocation().x - gX) / (tileSideLength + spacing) * (tileSideLength + spacing) + gX;
-                        int snapY = (getLocation().y - gY) / (tileSideLength + spacing) * (tileSideLength + spacing) + gY;
+                        int shipCenterX = getX() - grid.getX();
+                        int shipCenterY = getY() - grid.getY();
 
-                        // Set the snapped position
-                        setLocation(snapX, snapY);
+                        if (grid.gridContains(shipCenterX, shipCenterY)) {
+                            int realX = getX() - grid.getX();
+                            int realY = getY() - grid.getY();
+                            int snapX = (realX / (tileSideLength + grid.getSpacing())) * (tileSideLength + grid.getSpacing()) + grid.getX();
+                            int snapY = (realY / (tileSideLength + grid.getSpacing())) * (tileSideLength + grid.getSpacing()) + grid.getY();
+                            // check if tail is also inside the grid
+
+                            int shipTailPoint;
+                            if (isNormalOrientation) shipTailPoint = snapX + shipWidth;
+                            else shipTailPoint = realY + shipHeight;
+
+                            if (grid.gridContains(snapX, shipTailPoint-(tileSideLength/2))) {
+                                setLocation(snapX, snapY);
+                            } else {
+                                setLocation(prevX, prexY);
+                            }
+                            break;
+                        } else {
+                            // set previous location
+                            setLocation(prevX, prexY);
+                        }
+                        wasDragged = false;
                         break;
                     }
                 }
             }
+
 
             @Override
             public void mouseEntered(MouseEvent e) { }
@@ -119,6 +146,7 @@ public class ShipComponent extends JComponent {
                 int deltaY = e.getYOnScreen() - screenY;
 
                 setLocation(myX + deltaX, myY + deltaY);
+                wasDragged = true;
             }
 
             @Override
@@ -157,6 +185,10 @@ public class ShipComponent extends JComponent {
             g2Buffer.fillOval(shipDetailX, shipDetailY, tileSideLength/2, tileSideLength/2);
         }
 
+
+        g2Buffer.setColor(Color.RED);
+        g2Buffer.fillRect(0,0,5,5);
+
         // Draw the buffer onto the component using g2
         g.drawImage(buffer, 0, 0, null);
     }
@@ -165,6 +197,14 @@ public class ShipComponent extends JComponent {
 
     public void setHitVector(boolean[] hitVector) {
         this.hitVector = hitVector;
+    }
+
+    public int getShipWidth() {
+        return shipWidth;
+    }
+
+    public int getShipHeight() {
+        return shipHeight;
     }
 }
 

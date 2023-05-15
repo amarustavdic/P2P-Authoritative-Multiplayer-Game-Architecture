@@ -7,6 +7,8 @@ public class GridComponent extends JComponent {
 
     private volatile int screenX = 0;
     private volatile int screenY = 0;
+    private int gridX;
+    private int gridY;
     private int width;
     private int height;
     private int tileSideLength = 40;
@@ -17,6 +19,8 @@ public class GridComponent extends JComponent {
     public GridComponent(int x, int y, int tileSideLength) {
         screenX = x;
         screenY = y;
+        gridX = getX() + tileSideLength + spacing;
+        gridY = getY() + tileSideLength + spacing;
         this.width = 11 * (tileSideLength + spacing) - spacing;
         this.height = width;
 
@@ -33,6 +37,12 @@ public class GridComponent extends JComponent {
 
         drawCoordinates(g2);
         drawTiles(g2);
+
+        g2.setColor(Color.RED);
+        g2.drawRect(0,0,getWidth()-1, getHeight()-1);
+
+        g2.setColor(Color.GREEN);
+        g2.drawRect(gridX,gridY,getWidth()-1, getWidth()-1);
     }
 
 
@@ -69,5 +79,27 @@ public class GridComponent extends JComponent {
                 bufferedGraphics.fillRoundRect(x, y, tileSideLength, tileSideLength, 20, 20);
             }
         }
+    }
+
+
+    public boolean gridContains(int x, int y) {
+        if (x >= gridX && x <= getWidth()) {
+            return y >= gridY && y <= getHeight();
+        }
+        return false;
+    }
+
+
+    public int getGridX() {
+        return gridX;
+    }
+
+    public int getGridY() {
+        return gridY;
+    }
+
+
+    public int getSpacing() {
+        return spacing;
     }
 }
