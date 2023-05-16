@@ -51,12 +51,26 @@ public class ShipComponent extends JComponent {
 
 
 
-
         addMouseListener(new MouseListener() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
+                    // check if it can be safely turned
+                    GridComponent grid = null;
+                    Component[] components = getParent().getComponents();
+                    for (Component c : components) {
+                        if (c instanceof GridComponent) grid = (GridComponent) c;
+                    }
+
+                    int sl = (shipLength + 1) * (tileSideLength + grid.getSpacing()) - grid.getSpacing();
+                    int realX = getX() - grid.getGridX() - grid.getX();
+                    int realY = getY() - grid.getGridY() - grid.getY();
+                    int safeGridWidth = grid.getWidth() - sl;
+                    int safeGridHeight = grid.getHeight() - sl;
+                    if (realX > safeGridWidth || realY > safeGridHeight) return;      // skiping the turning
+
+
                     // Right button is pressed
                     int temp = shipWidth;
                     shipWidth = shipHeight;
