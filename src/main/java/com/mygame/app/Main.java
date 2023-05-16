@@ -1,8 +1,9 @@
 package com.mygame.app;
 
 import com.mygame.app.networking.*;
-import com.mygame.app.ui.GameUI;
+import com.mygame.app.ui.GameGUI;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;
@@ -43,8 +44,7 @@ public class Main {
 
 
         // run GUI
-        GameUI gameUI = new GameUI();
-        gameUI.repaint();
+        SwingUtilities.invokeLater(GameGUI::new);
 
 
 
