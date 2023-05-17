@@ -6,13 +6,13 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 public class KademliaMessageReceiver implements Runnable {
     private final InMessageQueue inMessageQueue;
     private final DatagramSocket udpSocket;
     private final byte[] inBuff;
+    private final Gson gson;
 
     public KademliaMessageReceiver(InMessageQueue inMessageQueue) {
         this.inMessageQueue = inMessageQueue;
@@ -22,6 +22,7 @@ public class KademliaMessageReceiver implements Runnable {
             throw new RuntimeException("Failed to create DatagramSocket.", e);
         }
         this.inBuff = new byte[65535];
+        this.gson = new Gson();
     }
 
     @Override
@@ -30,10 +31,12 @@ public class KademliaMessageReceiver implements Runnable {
             DatagramPacket dpReceive = new DatagramPacket(inBuff, inBuff.length);
             try {
                 udpSocket.receive(dpReceive);
+                String jsonMessage = new String(dpReceive.getData(), 0, dpReceive.getLength());
+                KademliaMessage receivedMessage = gson.fromJson(jsonMessage, KademliaMessage.class);
+                inMessageQueue.addMessage(receivedMessage);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to receive DatagramPacket.", e);
             }
         }
     }
-
 }

@@ -28,7 +28,7 @@ public class DebugCLI implements Runnable {
                 break;
             case "/help":
                 System.out.println(
-                        "DEBUG_CLI AVAILABLE COMMANDS:       \n" +
+                        "DEBUG_CLI AVAILABLE COMMANDS:                \n" +
                         "/print  -> prints out routing table content  \n"
                 );
                 break;

@@ -23,6 +23,8 @@ public class Main {
         KademliaDHT kademliaDHT = new KademliaDHT(InetAddress.getByName(localIp), port, isBootstrap, B, K);
 
 
+
+
         // run GUI
         //SwingUtilities.invokeLater(GameGUI::new);
     }

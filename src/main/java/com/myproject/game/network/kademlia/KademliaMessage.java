@@ -1,34 +1,45 @@
 package com.myproject.game.network.kademlia;
 
 
+import com.google.gson.Gson;
+
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+
 public class KademliaMessage {
     private KademliaMessageType type;
-    private String sourceAddress;
-    private int sourcePort;
-    private String destinationAddress;
-    private int destinationPort;
+    private String srcAddress;
+    private int srcPort;
+    private String destAddress;
+    private int destPort;
     private String payload;
-    private byte[] messageID;
+    private String msgID;
 
-    public KademliaMessage(KademliaMessageType type, String sourceAddress, int sourcePort, String destinationAddress, int destinationPort, String payload) {
+    public KademliaMessage(KademliaMessageType type, String srcAddress, int srcPort, String destAddress, int destPort, String payload) {
         this.type = type;
-        this.sourceAddress = sourceAddress;
-        this.sourcePort = sourcePort;
-        this.destinationAddress = destinationAddress;
-        this.destinationPort = destinationPort;
+        this.srcAddress = srcAddress;
+        this.srcPort = srcPort;
+        this.destAddress = destAddress;
+        this.destPort = destPort;
         this.payload = payload;
-        this.messageID = generateMessageID();
+        this.msgID = generateMessageID();
     }
 
-    private byte[] generateMessageID() {
+    private String generateMessageID() {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(payload.getBytes(StandardCharsets.UTF_8));
-            return hash;
+            byte[] hashBytes = digest.digest(payload.getBytes(StandardCharsets.UTF_8));
+            BigInteger hashInteger = new BigInteger(1, hashBytes);
+            StringBuilder hexString = new StringBuilder(hashInteger.toString(16));
+
+            // Pad with leading zeros if needed
+            while (hexString.length() < 64) {
+                hexString.insert(0, "0");
+            }
+            return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -36,25 +47,16 @@ public class KademliaMessage {
     }
 
 
-
-    // Getters and Setters
-
-    public KademliaMessageType getType() {
-        return type;
-    }
-
-    public void setType(KademliaMessageType type) {
-        this.type = type;
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 
 
 
-    public byte[] getMessageID() {
-        return messageID;
-    }
 
-    public void setMessageID(byte[] messageID) {
-        this.messageID = messageID;
+    public String getDestAddress() {
+        return destAddress;
     }
 }
 

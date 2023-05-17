@@ -31,12 +31,27 @@ public class KademliaDHT {
 
 
         ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.submit(messageSender);
         executorService.submit(messageReceiver);
         executorService.submit(routingTableUpdater);
         executorService.submit(pingHandler);
 
         // only used for debugging purposes
         executorService.submit(new DebugCLI(routingTable));
+
+
+
+
+
+        KademliaMessage message = new KademliaMessage(
+                KademliaMessageType.PING,
+                "asadf",
+                port,
+                "asdf",
+                port,
+                "hello"
+        );
+        outMessageQueue.addMessage(message);
 
     }
 

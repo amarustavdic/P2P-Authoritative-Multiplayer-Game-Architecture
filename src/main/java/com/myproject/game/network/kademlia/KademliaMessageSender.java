@@ -1,11 +1,13 @@
 package com.myproject.game.network.kademlia;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.net.*;
 
+
 public class KademliaMessageSender implements Runnable {
     private final OutMessageQueue outMessageQueue;
-    private DatagramSocket udpSocket;
+    private final DatagramSocket udpSocket;
     private boolean running;
 
     public KademliaMessageSender(OutMessageQueue outMessageQueue) {
@@ -21,20 +23,6 @@ public class KademliaMessageSender implements Runnable {
     @Override
     public void run() {
         while (running) {
-            synchronized (outMessageQueue) {
-                while (outMessageQueue.isEmpty()) {
-                    try {
-                        outMessageQueue.wait(); // Wait until the queue is not empty
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException("KademliaMessageSender thread was interrupted.", e);
-                    }
-                }
-            }
-
-            if (outMessageQueue.isEmpty()) {
-                continue; // Check again if the queue is empty after waking up
-            }
-
             KademliaMessage message = outMessageQueue.getNextMessage();
             sendKademliaMessage(message);
         }
@@ -44,12 +32,15 @@ public class KademliaMessageSender implements Runnable {
     }
 
     private void sendKademliaMessage(KademliaMessage message) {
+        Gson gson = new Gson();
+        String jsonMessage = gson.toJson(message);
+
         DatagramPacket packet;
         try {
             packet = new DatagramPacket(
-                    message.getBytes(),
-                    message.getBytes().length,
-                    InetAddress.getByName(message.getReceiver_ip()),
+                    jsonMessage.getBytes(),
+                    jsonMessage.getBytes().length,
+                    InetAddress.getByName(message.getDestAddress()),
                     5000
             );
         } catch (UnknownHostException e) {
@@ -62,14 +53,11 @@ public class KademliaMessageSender implements Runnable {
             throw new RuntimeException("Failed to send DatagramPacket.", e);
         }
 
-        System.out.print("Message sent: ");
-        message.print();
+        System.out.println("Message sent: " + jsonMessage);
     }
 
     public void stopSender() {
         running = false;
-        synchronized (outMessageQueue) {
-            outMessageQueue.notify(); // Wake up the thread in case it's waiting
-        }
+        Thread.currentThread().interrupt(); // Interrupt the thread to wake it up if blocked by take()
     }
 }
