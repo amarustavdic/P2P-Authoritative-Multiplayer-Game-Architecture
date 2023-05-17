@@ -41,7 +41,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.mygame.app.Main</mainClass>
+                            <mainClass>com.myproject.game.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

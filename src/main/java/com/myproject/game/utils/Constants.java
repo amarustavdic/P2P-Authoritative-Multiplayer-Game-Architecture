@@ -1,4 +1,4 @@
-package com.mygame.app;
+package com.myproject.game.utils;
 
 public class Constants {
 

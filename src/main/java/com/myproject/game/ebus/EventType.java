@@ -1,4 +1,4 @@
-package com.mygame.app.ui.ebus;
+package com.myproject.game.ebus;
 
 public enum EventType {
     MAIN_MENU,

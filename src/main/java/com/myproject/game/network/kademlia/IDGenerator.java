@@ -1,5 +1,4 @@
-package com.mygame.app.networking;
-import java.math.BigInteger;
+package com.myproject.game.network.kademlia;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -29,8 +28,6 @@ public class IDGenerator {
     }
 
     private static String bytesToHex(byte[] bytes) {
-        //return new BigInteger(bytes).toString(16);
-
         char[] hexChars = new char[bytes.length * 2];
         for (int i = 0; i < bytes.length; i++) {
             int v = bytes[i] & 0xff;

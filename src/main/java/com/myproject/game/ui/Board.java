@@ -1,4 +1,4 @@
-package com.mygame.app.ui;
+package com.myproject.game.ui;
 
 import javax.swing.*;
 import java.awt.*;

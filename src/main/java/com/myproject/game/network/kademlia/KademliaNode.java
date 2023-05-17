@@ -1,33 +1,32 @@
-package com.mygame.app.networking;
+package com.myproject.game.network.kademlia;
 
+public class KademliaNode {
 
-public class Node {
-
-    private final String id;
-    private final String ip;
+    private final String nodeId;
+    private final String nodeIp;
     private final int port;
     private final boolean bootstrap;
     private long lastSeenTimestamp;
 
-    public Node(String id, String ip, int port, boolean bootstrap, long lastSeenTimestamp) {
-        this.id = id;
-        this.ip = ip;
+    public KademliaNode(String nodeId, String nodeIp, int port, boolean bootstrap, long lastSeenTimestamp) {
+        this.nodeId = nodeId;
+        this.nodeIp = nodeIp;
         this.port = port;
         this.bootstrap = bootstrap;
         this.lastSeenTimestamp = lastSeenTimestamp;
     }
 
 
-    public int getId() {
-        return IDGenerator.hexStringToInt(id);
+    public int getNodeId() {
+        return IDGenerator.hexStringToInt(nodeId);
     }
 
     public String getIdHex() {
-        return id;
+        return nodeId;
     }
 
-    public String getIp() {
-        return ip;
+    public String getNodeIp() {
+        return nodeIp;
     }
 
     public int getPort() {
@@ -48,7 +47,7 @@ public class Node {
 
     public int getDistance(String nodeId) {
         int x = IDGenerator.hexStringToInt(nodeId);
-        int y = IDGenerator.hexStringToInt(id);
+        int y = IDGenerator.hexStringToInt(this.nodeId);
         return x ^ y;
     }
 }

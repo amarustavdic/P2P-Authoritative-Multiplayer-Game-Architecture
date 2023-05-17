@@ -1,8 +1,8 @@
-package com.mygame.app.ui;
+package com.myproject.game.ui;
 
+import com.myproject.game.ebus.EventType;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.mygame.app.ui.ebus.EventType;
 
 import javax.swing.*;
 
