@@ -2,6 +2,7 @@ package com.myproject.game.network.kademlia;
 
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
 public class RoutingTableUpdater extends Thread {
@@ -51,23 +52,27 @@ public class RoutingTableUpdater extends Thread {
     private void sendFindNodeMessages() {
         ArrayList<Node> closestNodes = routingTable.getClosestNodes(routingTable.getLocalNode().getNodeId(), routingTable.getAlpha());
         if (closestNodes.isEmpty()) {
-            if (routingTable.getLocalNode() != routingTable.getBootstrapNode()) {
+            if (!Objects.equals(routingTable.getLocalNode().getNodeId().toString(), routingTable.getBootstrapNode().getNodeId().toString())) {
                 closestNodes.add(routingTable.getBootstrapNode()); // if no nodes, contact bootstrap
             } else {
                 System.out.println("This is the BOOTSTRAP!");
             }
+        } else {
+            System.out.println("im not empty");
         }
         Node localNode = routingTable.getLocalNode();
 
+        KademliaMessage message;
         for (Node node : closestNodes) {
-            KademliaMessage message = new KademliaMessage(
+            message = new KademliaMessage(
                     KademliaMessageType.FIND_NODE,
                     localNode.getAddress().getHostName(),
                     localNode.getAddress().getPort(),
                     node.getAddress().getHostName(),
                     node.getAddress().getPort(),
-                    null
+                    "hello"
             );
+            // it is not reaching this
             outMessageQueue.addMessage(message);
         }
     }

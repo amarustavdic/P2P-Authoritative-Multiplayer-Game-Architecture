@@ -20,7 +20,6 @@ public class Main {
         else isBootstrap = Boolean.parseBoolean(args[0]);
         localIp = InetAddress.getLocalHost().getHostAddress();
 
-
         KademliaDHT kademliaDHT = new KademliaDHT(InetAddress.getByName(localIp), port, isBootstrap, B, K, alpha);
 
 

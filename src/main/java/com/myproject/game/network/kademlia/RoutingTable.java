@@ -95,7 +95,7 @@ public class RoutingTable {
         PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt(node -> node.getDistance(target)));
         for (List<Node> bucket : buckets) {
             for (Node node : bucket) {
-                if (!node.getNodeId().equals(localNode.getNodeId())) {
+                if (!node.getNodeId().equals(localNode.getNodeId()) && !node.getNodeId().equals(target)) {
                     pq.offer(node);
                 }
             }
@@ -105,6 +105,7 @@ public class RoutingTable {
         }
         return closestNodes;
     }
+
 
 
 
