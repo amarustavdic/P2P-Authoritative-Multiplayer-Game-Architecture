@@ -44,7 +44,7 @@ public class Main {
 
 
         // run GUI
-        SwingUtilities.invokeLater(GameGUI::new);
+        //SwingUtilities.invokeLater(GameGUI::new);
 
 
 

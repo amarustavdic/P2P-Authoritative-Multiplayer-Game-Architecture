@@ -29,8 +29,8 @@ public class IDGenerator {
     }
 
     private static String bytesToHex(byte[] bytes) {
-        return new BigInteger(bytes).toString(16);
-        /*
+        //return new BigInteger(bytes).toString(16);
+
         char[] hexChars = new char[bytes.length * 2];
         for (int i = 0; i < bytes.length; i++) {
             int v = bytes[i] & 0xff;
@@ -38,8 +38,6 @@ public class IDGenerator {
             hexChars[i * 2 + 1] = HEX_ARRAY[v & 0x0f];
         }
         return new String(hexChars);
-
-         */
     }
 
     public static byte[] hexToBytes(String hex) {
