@@ -35,7 +35,7 @@ public class Node {
 
     public int getDistance(KademliaID target) {
         BigInteger distance = nodeId.getNumericID().xor(target.getNumericID());
-        return distance.bitCount(); // Using bit count as the distance metric
+        return distance.intValue();
     }
 
     @Override

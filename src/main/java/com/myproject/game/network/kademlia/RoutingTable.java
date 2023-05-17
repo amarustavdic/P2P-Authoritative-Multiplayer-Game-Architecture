@@ -92,10 +92,12 @@ public class RoutingTable {
 
     public ArrayList<Node> getClosestNodes(KademliaID target, int count) {
         ArrayList<Node> closestNodes = new ArrayList<>();
+
         PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt(node -> node.getDistance(target)));
+
         for (List<Node> bucket : buckets) {
             for (Node node : bucket) {
-                if (!node.getNodeId().equals(localNode.getNodeId()) && !node.getNodeId().equals(target)) {
+                if (!Objects.equals(node.getNodeId().getID(), localNode.getNodeId().getID())) {
                     pq.offer(node);
                 }
             }
