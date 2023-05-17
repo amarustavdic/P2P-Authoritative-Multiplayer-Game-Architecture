@@ -35,7 +35,7 @@ public class KademliaMessageReceiver implements Runnable {
                 KademliaMessage receivedMessage = gson.fromJson(jsonMessage, KademliaMessage.class);
                 inMessageQueue.addMessage(receivedMessage);
 
-                System.out.println("Received message: " + receivedMessage.toJson());
+                System.out.println("Received message: " + receivedMessage.toJson() + "\n");
             } catch (IOException e) {
                 throw new RuntimeException("Failed to receive DatagramPacket.", e);
             }

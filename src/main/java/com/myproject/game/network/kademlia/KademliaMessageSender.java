@@ -49,6 +49,6 @@ public class KademliaMessageSender implements Runnable {
             throw new RuntimeException("Failed to send DatagramPacket.", e);
         }
 
-        System.out.println("Message sent: " + jsonMessage);
+        System.out.println("Message sent: " + jsonMessage + "\n");
     }
 }

@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 
 
 public class KademliaIDGenerator {
-    private static final int ID_SIZE = 16;       // bits
+    private static final int ID_SIZE = 8;       // bits
 
     public static KademliaID generateID(String data) {
         try {

@@ -51,21 +51,21 @@ public class RoutingTable {
 
 
     public void insertNode(Node node) {
-        if (node.getNodeId().equals(localNode.getNodeId())) return; // Skip if the node is the local node
+        if (node.getNodeId().getID().equals(localNode.getNodeId().getID())) return;
         int index = getIndex(localNode.getNodeId(), node.getNodeId());
-        List<Node> bucket = buckets.get(index);
+        ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
         if (bucket.size() < K) {
-            removeNode(node); // Remove the node if already present in the bucket
+            removeNode(node);
             bucket.add(node);
         } else {
-            if (removeNode(node)) {
-                bucket.add(node);
-            } else {
+            if (removeNode(node)) bucket.add(node);
+            else {
                 removeOldestNode(bucket);
                 bucket.add(node);
             }
         }
     }
+
 
     public boolean removeNode(Node node) {
         int index = getIndex(localNode.getNodeId(), node.getNodeId());
@@ -110,15 +110,14 @@ public class RoutingTable {
 
 
 
+
     // helper methods are bellow
 
     private int getIndex(KademliaID localNodeId, KademliaID nodeId) {
-        BigInteger distance = localNodeId.getNumericID().xor(nodeId.getNumericID());
-        int prefixLength = B / K;
+        int distance = localNodeId.getNumericID().intValue() ^ nodeId.getNumericID().intValue();
+        int prefixLength = (int)(B / Math.pow(2, K));
         int offset = B - prefixLength;
-        BigInteger mask = BigInteger.valueOf(2).pow(prefixLength).subtract(BigInteger.ONE);
-        BigInteger index = distance.shiftRight(offset).and(mask);
-        return index.intValue();
+        return distance >> offset;
     }
 
     private static void removeOldestNode(List<Node> nodes) {
