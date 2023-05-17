@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 
 
 public class KademliaIDGenerator {
-    private static final int ID_SIZE = 8;       // in bits
+    private static final int ID_SIZE = 16;       // bits
 
     public static KademliaID generateID(String data) {
         try {
@@ -16,7 +16,7 @@ public class KademliaIDGenerator {
             BigInteger hashInt = new BigInteger(1, hashBytes);
             String hexValue = hashInt.toString(16);
             // Truncate or pad the hexadecimal string to the desired length
-            hexValue = truncateOrPad(hexValue, ID_SIZE);
+            hexValue = truncateOrPad(hexValue, ID_SIZE / 4);
             return new KademliaID(hexValue);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Failed to generate Kademlia ID.", e);

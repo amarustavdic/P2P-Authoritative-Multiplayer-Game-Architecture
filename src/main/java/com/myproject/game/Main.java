@@ -24,7 +24,8 @@ public class Main {
         KademliaDHT kademliaDHT = new KademliaDHT(InetAddress.getByName(localIp), port, isBootstrap, B, K, alpha);
 
 
-
+        System.out.println("This node ID: " + kademliaDHT.getNodeId() + " (hex)");
+        System.out.println("Bootstrap ID: " + kademliaDHT.getBootstrapId() + " (hex)");
 
         // run GUI
         //SwingUtilities.invokeLater(GameGUI::new);

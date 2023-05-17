@@ -25,7 +25,7 @@ public class KademliaDHT {
         this.outMessageQueue = new OutMessageQueue();
         this.messageReceiver = new KademliaMessageReceiver(inMessageQueue);
         this.messageSender = new KademliaMessageSender(outMessageQueue);
-        this.routingTableUpdater = new RoutingTableUpdater(routingTable, outMessageQueue,60000);
+        this.routingTableUpdater = new RoutingTableUpdater(routingTable, inMessageQueue, outMessageQueue,60000, 20000);
         this.pingHandler = new PingHandler(routingTable, 30000);
 
 
@@ -38,8 +38,17 @@ public class KademliaDHT {
 
         // only used for debugging purposes
         executorService.submit(new DebugCLI(routingTable));
+    }
 
 
+
+
+    public String getNodeId() {
+        return routingTable.getLocalNode().getNodeId().toString();
+    }
+
+    public String getBootstrapId() {
+        return routingTable.getBootstrapNode().getNodeId().toString();
     }
 
 }

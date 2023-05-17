@@ -149,6 +149,13 @@ public class RoutingTable {
         return alpha;
     }
 
+    public Node getBootstrapNode() {
+        return bootstrapNode;
+    }
+
+    public Node getLocalNode() {
+        return localNode;
+    }
 
     // for testing purposes only
     public void print() {

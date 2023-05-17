@@ -58,5 +58,9 @@ public class KademliaMessage {
     public String getDestAddress() {
         return destAddress;
     }
+
+    public KademliaMessageType getType() {
+        return type;
+    }
 }
 
