@@ -13,6 +13,7 @@ public class Main {
     private static final int port = 5000;
     private static final int B = 8;
     private static final int K = 2;
+    private static final int alpha = 2;
 
     public static void main(String[] args) throws IOException {
         if (args.length == 0) isBootstrap = false;
@@ -20,7 +21,7 @@ public class Main {
         localIp = InetAddress.getLocalHost().getHostAddress();
 
 
-        KademliaDHT kademliaDHT = new KademliaDHT(InetAddress.getByName(localIp), port, isBootstrap, B, K);
+        KademliaDHT kademliaDHT = new KademliaDHT(InetAddress.getByName(localIp), port, isBootstrap, B, K, alpha);
 
 
 

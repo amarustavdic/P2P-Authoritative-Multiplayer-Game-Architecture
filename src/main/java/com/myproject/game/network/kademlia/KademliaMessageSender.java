@@ -8,7 +8,7 @@ import java.net.*;
 public class KademliaMessageSender implements Runnable {
     private final OutMessageQueue outMessageQueue;
     private final DatagramSocket udpSocket;
-    private boolean running;
+
 
     public KademliaMessageSender(OutMessageQueue outMessageQueue) {
         this.outMessageQueue = outMessageQueue;
@@ -17,18 +17,14 @@ public class KademliaMessageSender implements Runnable {
         } catch (SocketException e) {
             throw new RuntimeException("Failed to create DatagramSocket.", e);
         }
-        this.running = true;
     }
 
     @Override
     public void run() {
-        while (running) {
+        while (true) {
             KademliaMessage message = outMessageQueue.getNextMessage();
             sendKademliaMessage(message);
         }
-
-        // Close the DatagramSocket when the thread stops
-        udpSocket.close();
     }
 
     private void sendKademliaMessage(KademliaMessage message) {
@@ -54,10 +50,5 @@ public class KademliaMessageSender implements Runnable {
         }
 
         System.out.println("Message sent: " + jsonMessage);
-    }
-
-    public void stopSender() {
-        running = false;
-        Thread.currentThread().interrupt(); // Interrupt the thread to wake it up if blocked by take()
     }
 }

@@ -19,13 +19,13 @@ public class KademliaDHT {
     private final RoutingTableUpdater routingTableUpdater;
     private final PingHandler pingHandler;
 
-    public KademliaDHT(InetAddress ip, int port, boolean isBootstrapNode, int B, int K) {
-        this.routingTable = new RoutingTable(ip, port, isBootstrapNode, B, K);
+    public KademliaDHT(InetAddress ip, int port, boolean isBootstrapNode, int B, int K, int alpha) {
+        this.routingTable = new RoutingTable(ip, port, isBootstrapNode, B, K, alpha);
         this.inMessageQueue = new InMessageQueue();
         this.outMessageQueue = new OutMessageQueue();
         this.messageReceiver = new KademliaMessageReceiver(inMessageQueue);
         this.messageSender = new KademliaMessageSender(outMessageQueue);
-        this.routingTableUpdater = new RoutingTableUpdater(routingTable,60000);
+        this.routingTableUpdater = new RoutingTableUpdater(routingTable, outMessageQueue,60000);
         this.pingHandler = new PingHandler(routingTable, 30000);
 
 
@@ -39,19 +39,6 @@ public class KademliaDHT {
         // only used for debugging purposes
         executorService.submit(new DebugCLI(routingTable));
 
-
-
-
-
-        KademliaMessage message = new KademliaMessage(
-                KademliaMessageType.PING,
-                "asadf",
-                port,
-                "asdf",
-                port,
-                "hello"
-        );
-        outMessageQueue.addMessage(message);
 
     }
 

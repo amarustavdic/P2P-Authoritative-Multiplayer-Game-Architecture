@@ -1,9 +1,11 @@
 package com.myproject.game.network.kademlia;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RoutingTable {
 
@@ -12,32 +14,29 @@ public class RoutingTable {
     // B / 2^K - used to calculate prefix length for a given bucket
     private int B;       // ID size in number of bits
     private int K;       // size of k-bucket (number of nodes it can store)
-    private int alpha;
-    private List<List<KademliaNode>> buckets;
-    private KademliaNode localKademliaNode;
-    private KademliaNode bootstrapKademliaNode;
+    private int alpha;   // number of parallel queries
+    private List<List<Node>> buckets;
+    private Node localNode;
+    private Node bootstrapNode;
 
 
-    public RoutingTable(InetAddress ip, int port, boolean isBootstrapNode, int B, int K) {
-        IDGenerator.generateID(ip.getHostAddress()+port);
-        KademliaNode node = new KademliaNode(
-                IDGenerator.getIdAsString(),
-                ip.getHostAddress(),
-                port,
-                isBootstrapNode,
-                0L
+    public RoutingTable(InetAddress ip, int port, boolean isBootstrapNode, int B, int K, int alpha) {
+        this.B = B;
+        this.K = K;
+        this.alpha = alpha;
+        Node node = new Node(
+                KademliaIDGenerator.generateID(ip.getHostAddress()+port),
+                new InetSocketAddress(ip.getHostAddress(), port),
+                isBootstrapNode
         );
         if (isBootstrapNode) {
-            localKademliaNode = bootstrapKademliaNode = node;
+            localNode = bootstrapNode = node;
         } else {
-            localKademliaNode = node;
-            IDGenerator.generateID("172.17.0.2"+port);
-            bootstrapKademliaNode = new KademliaNode(
-                    IDGenerator.getIdAsString(),
-                    "172.17.0.2",
-                    port,
-                    true,
-                    0L
+            localNode = node;
+            bootstrapNode = new Node(
+                    KademliaIDGenerator.generateID("172.17.0.2"+port),
+                    new InetSocketAddress( "172.17.0.2", port),
+                    true
             );
         }
 
@@ -49,28 +48,30 @@ public class RoutingTable {
 
 
 
-    public boolean add(KademliaNode kademliaNode) {
-        if (kademliaNode.getNodeId() == localKademliaNode.getNodeId()) return false;
-        int index = getIndex(localKademliaNode.getNodeId(), kademliaNode.getNodeId());
-        ArrayList<KademliaNode> bucket = (ArrayList<KademliaNode>) buckets.get(index);
+
+
+    public void insertNode(Node node) {
+        if (node.getNodeId().equals(localNode.getNodeId())) return; // Skip if the node is the local node
+        int index = getIndex(localNode.getNodeId(), node.getNodeId());
+        List<Node> bucket = buckets.get(index);
         if (bucket.size() < K) {
-            remove(kademliaNode);
-            bucket.add(kademliaNode);
+            removeNode(node); // Remove the node if already present in the bucket
+            bucket.add(node);
         } else {
-            if (remove(kademliaNode)) bucket.add(kademliaNode);
-            else {
+            if (removeNode(node)) {
+                bucket.add(node);
+            } else {
                 removeOldestNode(bucket);
-                bucket.add(kademliaNode);
+                bucket.add(node);
             }
         }
-        return true;
     }
 
-    public boolean remove(KademliaNode kademliaNode) {
-        int index = getIndex(localKademliaNode.getNodeId(), kademliaNode.getNodeId());
-        ArrayList<KademliaNode> bucket = (ArrayList<KademliaNode>) buckets.get(index);
+    public boolean removeNode(Node node) {
+        int index = getIndex(localNode.getNodeId(), node.getNodeId());
+        List<Node> bucket = buckets.get(index);
         for (int i = 0; i < bucket.size(); i++) {
-            if (bucket.get(i).getNodeId() == kademliaNode.getNodeId()) {
+            if (bucket.get(i).getNodeId().equals(node.getNodeId())) {
                 bucket.remove(i);
                 return true;
             }
@@ -78,105 +79,88 @@ public class RoutingTable {
         return false;
     }
 
-    public boolean remove(String nodeIdHex) {
-        int index = getIndex(localKademliaNode.getNodeId(), IDGenerator.hexStringToInt(nodeIdHex));
-        ArrayList<KademliaNode> bucket = (ArrayList<KademliaNode>) buckets.get(index);
-        for (int i = 0; i < bucket.size(); i++) {
-            if (bucket.get(i).getNodeId() == IDGenerator.hexStringToInt(nodeIdHex)) {
-                bucket.remove(i);
-                return true;
+    public Node getNode(KademliaID nodeId) {
+        int index = getIndex(localNode.getNodeId(), nodeId);
+        List<Node> bucket = buckets.get(index);
+        for (Node node : bucket) {
+            if (node.getNodeId().equals(nodeId)) {
+                return node;
             }
         }
-        return false;
+        return null;
     }
 
-    // k - number of the closest nodes retrieved
-    public ArrayList<KademliaNode> getClosestNodes(int id, int k) {
-        ArrayList<KademliaNode> closestKademliaNodes = new ArrayList<KademliaNode>();
-        PriorityQueue<KademliaNode> pq = new PriorityQueue<KademliaNode>(
-                Comparator.comparingInt(n -> n.getDistance(IDGenerator.intToHexString(id))));
-        for (List<KademliaNode> bucket : buckets) {
-            for (KademliaNode kademliaNode : bucket) {
-                if (kademliaNode.getNodeId() != localKademliaNode.getNodeId()) {
-                    pq.offer(kademliaNode);
+    public ArrayList<Node> getClosestNodes(KademliaID target, int count) {
+        ArrayList<Node> closestNodes = new ArrayList<>();
+        PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt(node -> node.getDistance(target)));
+        for (List<Node> bucket : buckets) {
+            for (Node node : bucket) {
+                if (!node.getNodeId().equals(localNode.getNodeId())) {
+                    pq.offer(node);
                 }
             }
         }
-        while (!pq.isEmpty() && closestKademliaNodes.size() < k) {
-            closestKademliaNodes.add(pq.poll());
+        while (!pq.isEmpty() && closestNodes.size() < count) {
+            closestNodes.add(pq.poll());
         }
-        return closestKademliaNodes;
-    }
-
-    // I will see later what am I going to do about this one
-    // when I will actually need to use it
-    public void updateLastSeen(String nodeIdHex) {
-        int index = getIndex(localKademliaNode.getNodeId(), IDGenerator.hexStringToInt(nodeIdHex));
-        List<KademliaNode> bucket = buckets.get(index);
-        for (KademliaNode n : bucket) {
-            if (n.getNodeId() == IDGenerator.hexStringToInt(nodeIdHex)) {
-                n.setLastSeenTimestamp(Instant.now().getEpochSecond());
-                return;
-            }
-        }
+        return closestNodes;
     }
 
 
 
 
-    private int getIndex(int localNodeId, int nodeId) {
-        int distance = localNodeId ^ nodeId;
-        int prefixLength = (int)(B / Math.pow(2, K));
+    // helper methods are bellow
+
+    private int getIndex(KademliaID localNodeId, KademliaID nodeId) {
+        BigInteger distance = localNodeId.getNumericID().xor(nodeId.getNumericID());
+        int prefixLength = B / K;
         int offset = B - prefixLength;
-        return distance >> offset;
+        BigInteger mask = BigInteger.valueOf(2).pow(prefixLength).subtract(BigInteger.ONE);
+        BigInteger index = distance.shiftRight(offset).and(mask);
+        return index.intValue();
     }
 
-    public static void removeOldestNode(ArrayList<KademliaNode> kademliaNodes) {
-        long oldestTimestamp = Long.MAX_VALUE;
-        KademliaNode oldestKademliaNode = null;
-        for (KademliaNode kademliaNode : kademliaNodes) {
-            if (kademliaNode.getLastSeenTimestamp() < oldestTimestamp) {
-                oldestTimestamp = kademliaNode.getLastSeenTimestamp();
-                oldestKademliaNode = kademliaNode;
+    private static void removeOldestNode(List<Node> nodes) {
+        Instant oldestTimestamp = Instant.MAX;
+        Node oldestNode = null;
+        for (Node node : nodes) {
+            if (node.getLastSeen().isBefore(oldestTimestamp)) {
+                oldestTimestamp = node.getLastSeen();
+                oldestNode = node;
             }
         }
-        if (oldestKademliaNode != null) {
-            kademliaNodes.remove(oldestKademliaNode);
+        if (oldestNode != null) {
+            nodes.remove(oldestNode);
         }
     }
 
 
-    public KademliaNode getLocalNode() {
-        return localKademliaNode;
+
+
+    // getters and setters
+
+    public List<Node> getAllNodes() {
+        return buckets.stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
-    public KademliaNode getBootstrapNode() {
-        return bootstrapKademliaNode;
+    public int getAlpha() {
+        return alpha;
     }
-
-    public ArrayList<KademliaNode> getAllNodes() {
-        ArrayList<KademliaNode> allKademliaNodes = new ArrayList<>();
-        for (List<KademliaNode> bucket : buckets) {
-            allKademliaNodes.addAll(bucket);
-        }
-        return allKademliaNodes;
-    }
-
-
-
-
-
 
 
     // for testing purposes only
     public void print() {
         for (int i = 0; i < buckets.size(); i++) {
             System.out.println("BUCKET " + i);
-            for (int j = 0; j < buckets.get(i).size(); j++) {
-                int id = buckets.get(i).get(j).getNodeId();
-                System.out.print(IDGenerator.intToHexString(id) + "  ");
+            List<Node> bucket = buckets.get(i);
+            for (Node node : bucket) {
+                KademliaID nodeId = node.getNodeId();
+                System.out.print(nodeId.toString());
             }
             System.out.println();
         }
     }
+
 }
