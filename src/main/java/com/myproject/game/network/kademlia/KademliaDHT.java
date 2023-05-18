@@ -26,7 +26,7 @@ public class KademliaDHT {
         this.routingTable = new RoutingTable(ip, port, isBootstrapNode, B, K, alpha);
         this.inMessageQueue = new InMessageQueue();
         this.outMessageQueue = new OutMessageQueue();
-        this.messageReceiver = new KademliaMessageReceiver(inMessageQueue);
+        this.messageReceiver = new KademliaMessageReceiver(inMessageQueue, port);
         this.messageSender = new KademliaMessageSender(outMessageQueue);
         this.messageHandler = new MessageHandler(routingTable, inMessageQueue, outMessageQueue);
         this.routingTableUpdater = new RoutingTableUpdater(routingTable, inMessageQueue, outMessageQueue,60000);
@@ -34,7 +34,7 @@ public class KademliaDHT {
 
 
 
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(6);
         executorService.submit(messageSender);
         executorService.submit(messageReceiver);
         executorService.submit(messageHandler);

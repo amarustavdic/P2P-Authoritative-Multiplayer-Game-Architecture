@@ -41,11 +41,11 @@ public class KademliaMessage {
         this.destId = destId;
         this.destAddress = destAddress;
         this.destPort = destPort;
-        this.msgID = generateMessageID();
 
         Gson gson = new Gson();
         // Convert ArrayList to JSON
         this.payload = gson.toJson(nodes);
+        this.msgID = generateMessageID();
     }
 
     private String generateMessageID() {

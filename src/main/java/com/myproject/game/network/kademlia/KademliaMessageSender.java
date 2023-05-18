@@ -22,7 +22,12 @@ public class KademliaMessageSender implements Runnable {
     @Override
     public void run() {
         while (true) {
-            KademliaMessage message = outMessageQueue.getNextMessage();
+            KademliaMessage message = null;
+            try {
+                message = outMessageQueue.getNextMessage();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             sendKademliaMessage(message);
         }
     }

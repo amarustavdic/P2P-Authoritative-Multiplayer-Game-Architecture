@@ -10,20 +10,17 @@ public class InMessageQueue {
         this.inQueue = new LinkedBlockingQueue<>();
     }
 
-
     public KademliaMessage getNextMessage() {
-        KademliaMessage nextMessage = null;
         try {
-            nextMessage = inQueue.take();
-            System.out.println("message taken from queue");
+            return inQueue.take();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return nextMessage;
+        return null;
     }
 
     public void addMessage(KademliaMessage message) {
-        inQueue.add(message);
+        inQueue.offer(message);
     }
 
     public boolean isEmpty() {

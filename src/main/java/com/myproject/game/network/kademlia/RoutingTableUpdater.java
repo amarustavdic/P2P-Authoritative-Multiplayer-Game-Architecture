@@ -59,7 +59,11 @@ public class RoutingTableUpdater extends Thread {
                     node.getAddress().getPort(),
                     " "
             );
-            outMessageQueue.addMessage(message);
+            try {
+                outMessageQueue.addMessage(message);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

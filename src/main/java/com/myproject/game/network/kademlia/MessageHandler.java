@@ -4,7 +4,10 @@ import com.myproject.game.utils.Constants;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import static java.lang.Thread.sleep;
 
 
 public class MessageHandler implements Runnable {
@@ -22,12 +25,11 @@ public class MessageHandler implements Runnable {
 
     @Override
     public void run() {
+        KademliaMessage message = null;
         while (true) {
-            KademliaMessage message = inMessageQueue.getNextMessage();
-
+            message = inMessageQueue.getNextMessage();
             switch (message.getType()) {
                 case FIND_NODE:
-                    System.out.println(Constants.INFO + "IN QUEUE: " + inMessageQueue.length() + " messages" + Constants.RESET);
                     processFindNode(message);
                     break;
                 case FIND_NODE_REPLY:
@@ -41,31 +43,47 @@ public class MessageHandler implements Runnable {
 
 
     private void processFindNode(KademliaMessage message) {
-        Node node = new Node(
-                message.getSrcId(),
-                new InetSocketAddress(message.getSrcAddress(), message.getSrcPort()),
-                Objects.equals(routingTable.getBootstrapNode().getNodeId().toString(), message.getSrcId().getID())
-        );
+        // Reconstruct the source/sender node
+        InetSocketAddress srcSocketAddress = new InetSocketAddress(message.getSrcAddress(), message.getSrcPort());
+        boolean isBootstrapNode = routingTable.getBootstrapNode().getNodeId().equals(message.getSrcId().getID());
+        Node senderNode = new Node(message.getSrcId(), srcSocketAddress, isBootstrapNode);
 
-        System.out.println(Constants.INFO + "NODE: " + node.toString() + Constants.RESET);
-        System.out.println(Constants.INFO + "NEW NODE ADDED: " + routingTable.insertNode(node) + Constants.RESET);
-        ArrayList<Node> closestNodesToTarget = routingTable.getClosestNodes(message.getSrcId(), 3);
-        System.out.println(closestNodesToTarget.size());
+        // Insert the sender node into the routing table
+        boolean isNewNode = routingTable.insertNode(senderNode);
+        System.out.println(Constants.INFO + "New Node Added: " + isNewNode + Constants.RESET);
 
-        // send reply message with these nodes
+        // Get the closest nodes to the target from the routing table
+        KademliaID targetId = message.getSrcId();
+        int alpha = routingTable.getAlpha();
+        ArrayList<Node> closestNodes = routingTable.getClosestNodes(targetId, alpha);
+
+        System.out.println("checkpint 1");
+        System.out.println(closestNodes.toString());
+
+        // Send a reply message with the closest nodes
         KademliaMessage reply = new KademliaMessage(
                 KademliaMessageType.FIND_NODE_REPLY,
                 routingTable.getLocalNode().getNodeId(),
-                routingTable.getLocalNode().getAddress().toString(),
+                routingTable.getLocalNode().getAddress().getAddress().getHostAddress(),
                 routingTable.getLocalNode().getAddress().getPort(),
                 message.getSrcId(),
                 message.getSrcAddress(),
                 message.getSrcPort(),
-                closestNodesToTarget
+                closestNodes
         );
-        outMessageQueue.addMessage(reply);
-        System.out.println(Constants.GREEN + "REPLY SENT" + Constants.RESET);
+        System.out.println("checkpint 2");
+
+        try {
+            System.out.println("checkpint 3");
+            outMessageQueue.addMessage(reply);
+        } catch (InterruptedException e) {
+            System.out.println("checkpint 4");
+            e.printStackTrace();
+        }
+
+        System.out.println(Constants.GREEN + "Reply Sent" + Constants.RESET);
     }
+
 
     private void processFindNodeReply(KademliaMessage message) {
         System.out.println("Processing nodes: " + message.toJson());

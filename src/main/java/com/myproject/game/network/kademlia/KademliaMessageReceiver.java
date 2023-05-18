@@ -1,7 +1,6 @@
 package com.myproject.game.network.kademlia;
 
 import com.google.gson.Gson;
-import com.myproject.game.utils.Constants;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -9,36 +8,49 @@ import java.net.SocketException;
 
 
 public class KademliaMessageReceiver implements Runnable {
-    private final InMessageQueue inMessageQueue;
-    private final DatagramSocket udpSocket;
-    private final byte[] inBuff;
-    private final Gson gson;
+    private static final int BUFFER_SIZE = 65535;
 
-    public KademliaMessageReceiver(InMessageQueue inMessageQueue) {
+    private final InMessageQueue inMessageQueue;
+    private final Gson gson;
+    private final DatagramSocket udpSocket;
+    private final byte[] buffer;
+
+    public KademliaMessageReceiver(InMessageQueue inMessageQueue, int port) {
+        DatagramSocket udpSocket1;
         this.inMessageQueue = inMessageQueue;
-        try {
-            this.udpSocket = new DatagramSocket(5000);
-        } catch (SocketException e) {
-            throw new RuntimeException("Failed to create DatagramSocket.", e);
-        }
-        this.inBuff = new byte[65535];
         this.gson = new Gson();
+        this.buffer = new byte[BUFFER_SIZE];
+        try {
+            udpSocket1 = new DatagramSocket(port);
+        } catch (SocketException e) {
+            udpSocket1 = null;
+            e.printStackTrace();
+        }
+        this.udpSocket = udpSocket1;
     }
 
     @Override
     public void run() {
         while (true) {
-            DatagramPacket dpReceive = new DatagramPacket(inBuff, inBuff.length);
+            DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
             try {
-                udpSocket.receive(dpReceive);
-                String jsonMessage = new String(dpReceive.getData(), 0, dpReceive.getLength());
-                KademliaMessage receivedMessage = gson.fromJson(jsonMessage, KademliaMessage.class);
-                inMessageQueue.addMessage(receivedMessage);
-
-                System.out.println(Constants.INFO + "Received message: " + receivedMessage.toJson() + "\n" + Constants.RESET);
+                udpSocket.receive(packet);
+                processReceivedPacket(packet);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to receive DatagramPacket.", e);
+                e.printStackTrace();
             }
         }
+    }
+
+    private void processReceivedPacket(DatagramPacket packet) {
+        byte[] data = packet.getData();
+        int length = packet.getLength();
+        String jsonMessage = new String(data, 0, length);
+
+        KademliaMessage receivedMessage = gson.fromJson(jsonMessage, KademliaMessage.class);
+        inMessageQueue.addMessage(receivedMessage);
+
+        // Clear the buffer
+        packet.setLength(BUFFER_SIZE);
     }
 }
