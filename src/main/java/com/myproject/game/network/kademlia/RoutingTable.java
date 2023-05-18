@@ -1,5 +1,7 @@
 package com.myproject.game.network.kademlia;
 
+import com.myproject.game.utils.Constants;
+
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -44,6 +46,9 @@ public class RoutingTable {
         for (int i = 0; i < (int)Math.pow(2, K); i++) {
             buckets.add(new ArrayList<>(K));
         }
+
+        // not really necessary
+        insertNode(bootstrapNode);
     }
 
 
@@ -56,20 +61,18 @@ public class RoutingTable {
         ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
         if (bucket.size() < K) {
             removeNode(node);
-            bucket.add(node);
         } else {
-            if (removeNode(node)) bucket.add(node);
-            else {
+            if (!removeNode(node)) {
                 removeOldestNode(bucket);
-                bucket.add(node);
             }
         }
+        bucket.add(node);
         return true;
     }
 
     public boolean removeNode(Node node) {
         int index = getIndex(localNode.getNodeId(), node.getNodeId());
-        List<Node> bucket = buckets.get(index);
+        ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
         for (int i = 0; i < bucket.size(); i++) {
             if (bucket.get(i).getNodeId().equals(node.getNodeId())) {
                 bucket.remove(i);
@@ -116,10 +119,10 @@ public class RoutingTable {
     // helper methods are bellow
 
     private int getIndex(KademliaID localNodeId, KademliaID nodeId) {
-        int distance = localNodeId.getNumericID().intValue() ^ nodeId.getNumericID().intValue();
+        BigInteger distance = localNodeId.getNumericID().xor(nodeId.getNumericID());
         int prefixLength = (int)(B / Math.pow(2, K));
         int offset = B - prefixLength;
-        return distance >> offset;
+        return distance.intValue() >> offset;
     }
 
 
@@ -161,17 +164,23 @@ public class RoutingTable {
         return localNode;
     }
 
+
+
+
+
     // for testing purposes only
     public void print() {
+        System.out.println(Constants.BLUE);
         for (int i = 0; i < buckets.size(); i++) {
-            System.out.println("BUCKET " + i);
+            System.out.print("[BUCKET " + i + "]:  ");
             List<Node> bucket = buckets.get(i);
             for (Node node : bucket) {
                 KademliaID nodeId = node.getNodeId();
-                System.out.print(nodeId.toString());
+                System.out.print(nodeId.toString() + "  ");
             }
             System.out.println();
         }
+        System.out.println(Constants.RESET);
     }
 
 }

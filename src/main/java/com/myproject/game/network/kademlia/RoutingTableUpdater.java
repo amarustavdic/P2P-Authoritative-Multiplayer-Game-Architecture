@@ -3,7 +3,6 @@ package com.myproject.game.network.kademlia;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.TimeoutException;
 
 public class RoutingTableUpdater extends Thread {
 
@@ -39,11 +38,7 @@ public class RoutingTableUpdater extends Thread {
         if (closestNodes.isEmpty()) {
             if (!Objects.equals(routingTable.getLocalNode().getNodeId().toString(), routingTable.getBootstrapNode().getNodeId().toString())) {
                 closestNodes.add(routingTable.getBootstrapNode()); // if no nodes, contact bootstrap
-            } else {
-                System.out.println("This is the BOOTSTRAP!");
             }
-        } else {
-            System.out.println("im not empty");
         }
         Node localNode = routingTable.getLocalNode();
 

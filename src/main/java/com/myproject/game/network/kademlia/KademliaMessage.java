@@ -2,6 +2,7 @@ package com.myproject.game.network.kademlia;
 
 
 import com.google.gson.Gson;
+import com.myproject.game.utils.JsonHelper;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -41,10 +42,7 @@ public class KademliaMessage {
         this.destId = destId;
         this.destAddress = destAddress;
         this.destPort = destPort;
-
-        Gson gson = new Gson();
-        // Convert ArrayList to JSON
-        this.payload = gson.toJson(nodes);
+        this.payload = JsonHelper.createJsonString(nodes);
         this.msgID = generateMessageID();
     }
 

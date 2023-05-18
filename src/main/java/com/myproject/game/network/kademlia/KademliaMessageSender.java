@@ -1,6 +1,6 @@
 package com.myproject.game.network.kademlia;
-import com.google.gson.Gson;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.net.*;
 
@@ -53,7 +53,5 @@ public class KademliaMessageSender implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException("Failed to send DatagramPacket.", e);
         }
-
-        System.out.println("Message sent: " + jsonMessage + "\n");
     }
 }

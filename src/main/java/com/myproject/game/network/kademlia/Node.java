@@ -17,6 +17,16 @@ public class Node {
         this.lastSeen = Instant.now();
     }
 
+    public Node(KademliaID nodeId, InetSocketAddress address, boolean isBootstrap, Instant lastSeen) {
+        this.nodeId = nodeId;
+        this.address = address;
+        this.isBootstrap = isBootstrap;
+        this.lastSeen = lastSeen;
+    }
+
+
+
+
     public KademliaID getNodeId() {
         return nodeId;
     }
@@ -58,5 +68,10 @@ public class Node {
                 ", address=" + address +
                 ", lastSeen=" + lastSeen +
                 '}';
+    }
+
+
+    public boolean isBootstrap() {
+        return isBootstrap;
     }
 }
