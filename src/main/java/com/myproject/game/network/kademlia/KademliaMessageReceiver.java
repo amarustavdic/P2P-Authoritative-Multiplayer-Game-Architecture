@@ -1,7 +1,7 @@
 package com.myproject.game.network.kademlia;
 
 import com.google.gson.Gson;
-
+import com.myproject.game.utils.Constants;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -35,7 +35,7 @@ public class KademliaMessageReceiver implements Runnable {
                 KademliaMessage receivedMessage = gson.fromJson(jsonMessage, KademliaMessage.class);
                 inMessageQueue.addMessage(receivedMessage);
 
-                System.out.println("Received message: " + receivedMessage.toJson() + "\n");
+                System.out.println(Constants.INFO + "Received message: " + receivedMessage.toJson() + "\n" + Constants.RESET);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to receive DatagramPacket.", e);
             }

@@ -50,8 +50,8 @@ public class RoutingTable {
 
 
 
-    public void insertNode(Node node) {
-        if (node.getNodeId().getID().equals(localNode.getNodeId().getID())) return;
+    public boolean insertNode(Node node) {
+        if (node.getNodeId().getID().equals(localNode.getNodeId().getID())) return false;
         int index = getIndex(localNode.getNodeId(), node.getNodeId());
         ArrayList<Node> bucket = (ArrayList<Node>) buckets.get(index);
         if (bucket.size() < K) {
@@ -64,8 +64,8 @@ public class RoutingTable {
                 bucket.add(node);
             }
         }
+        return true;
     }
-
 
     public boolean removeNode(Node node) {
         int index = getIndex(localNode.getNodeId(), node.getNodeId());
@@ -121,6 +121,8 @@ public class RoutingTable {
         int offset = B - prefixLength;
         return distance >> offset;
     }
+
+
 
     private static void removeOldestNode(List<Node> nodes) {
         Instant oldestTimestamp = Instant.MAX;

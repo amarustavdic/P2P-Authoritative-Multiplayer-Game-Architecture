@@ -16,10 +16,11 @@ public class KademliaDHT {
     private final OutMessageQueue outMessageQueue;
     private final KademliaMessageReceiver messageReceiver;
     private final KademliaMessageSender messageSender;
-    private final MessageDispatcher messageDispatcher;
+    private final MessageHandler messageHandler;
 
     private final RoutingTableUpdater routingTableUpdater;
     private final PingHandler pingHandler;
+
 
     public KademliaDHT(InetAddress ip, int port, boolean isBootstrapNode, int B, int K, int alpha) {
         this.routingTable = new RoutingTable(ip, port, isBootstrapNode, B, K, alpha);
@@ -27,12 +28,7 @@ public class KademliaDHT {
         this.outMessageQueue = new OutMessageQueue();
         this.messageReceiver = new KademliaMessageReceiver(inMessageQueue);
         this.messageSender = new KademliaMessageSender(outMessageQueue);
-        this.messageDispatcher = new MessageDispatcher(
-                routingTable,
-                inMessageQueue,
-                outMessageQueue,
-                10
-        );
+        this.messageHandler = new MessageHandler(routingTable, inMessageQueue, outMessageQueue);
         this.routingTableUpdater = new RoutingTableUpdater(routingTable, inMessageQueue, outMessageQueue,60000);
         this.pingHandler = new PingHandler(routingTable, 30000);
 
@@ -41,7 +37,7 @@ public class KademliaDHT {
         ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.submit(messageSender);
         executorService.submit(messageReceiver);
-        executorService.submit(messageDispatcher);
+        executorService.submit(messageHandler);
         executorService.submit(routingTableUpdater);
         executorService.submit(pingHandler);
 
