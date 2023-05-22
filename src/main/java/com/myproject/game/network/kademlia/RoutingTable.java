@@ -117,7 +117,6 @@ public class RoutingTable {
 
 
     // helper methods are bellow
-
     private int getIndex(KademliaID localNodeId, KademliaID nodeId) {
         BigInteger distance = localNodeId.getNumericID().xor(nodeId.getNumericID());
         int prefixLength = (int)(B / Math.pow(2, K));
@@ -163,6 +162,7 @@ public class RoutingTable {
     public Node getLocalNode() {
         return localNode;
     }
+
 
 
 
