@@ -24,7 +24,7 @@ public class Blockchain {
         this.chain = new ArrayList<>();
         this.inbox = new BlockchainInbox();
         this.outbox = new BlockchainOutbox();
-        this.sender = new BlockchainMessageSender(dht, outbox, port);
+        this.sender = new BlockchainMessageSender(dht, outbox, port,1000, 2);
         this.receiver = new BlockchainMessageReceiver(port);
 
 

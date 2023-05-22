@@ -51,7 +51,6 @@ public class BlockchainMessageReceiver implements Runnable {
     }
 
     private void processReceivedMessage(String message) {
-
         System.out.println("Received message: " + message);
     }
 

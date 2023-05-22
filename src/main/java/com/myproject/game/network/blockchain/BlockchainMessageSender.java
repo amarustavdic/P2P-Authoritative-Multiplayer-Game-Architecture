@@ -8,6 +8,7 @@ import com.myproject.game.network.kademlia.Node;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 public class BlockchainMessageSender implements Runnable {
@@ -15,12 +16,16 @@ public class BlockchainMessageSender implements Runnable {
     private final BlockchainOutbox outbox;
     private final Socket socket;
     private final int port;
+    private final int connectionTimeout;
+    private final int maxRetries;
 
 
-    public BlockchainMessageSender(KademliaDHT dht, BlockchainOutbox outbox, int port) {
+    public BlockchainMessageSender(KademliaDHT dht, BlockchainOutbox outbox, int port, int connectionTimeout, int maxRetries) {
         this.dht = dht;
         this.outbox = outbox;
         this.port = port;
+        this.connectionTimeout = connectionTimeout;
+        this.maxRetries = maxRetries;
         this.socket = new Socket();
     }
 
@@ -44,23 +49,24 @@ public class BlockchainMessageSender implements Runnable {
         String jsonMessage = gson.toJson(message);
 
         List<Node> peers = dht.getKnowPeers();
-        while (!peers.isEmpty()) {
-            Node peer = peers.get(0);
-            peers.remove(0);
-            try {
-                socket.connect(new InetSocketAddress(peer.getAddress().getAddress(), port));
-            } catch (IOException e) {
-
-                System.out.println("Unable to connect to: " + peer.getNodeId());
-                throw new RuntimeException("Failed to connect to the receiver's IP address.", e);
+        for (Node peer : peers) {
+            int retries = 0;
+            while (retries < maxRetries) {
+                try (Socket socket = new Socket()) {
+                    socket.connect(new InetSocketAddress(peer.getAddress().getAddress(), port),
+                            connectionTimeout);
+                    socket.getOutputStream().write(jsonMessage.getBytes());
+                    socket.getOutputStream().flush();
+                    return; // Message sent successfully, exit the loop
+                } catch (SocketTimeoutException e) {
+                    System.out.println("Connection timeout to: " + peer.getNodeId() + ". Retrying...");
+                    retries++;
+                } catch (IOException e) {
+                    System.out.println("Failed to connect to: " + peer.getNodeId() + ". Retrying...");
+                    retries++;
+                }
             }
-
-            try {
-                socket.getOutputStream().write(jsonMessage.getBytes());
-                socket.getOutputStream().flush();
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to send the message.", e);
-            }
+            System.out.println("Unable to send message to: " + peer.getNodeId());
         }
     }
 }
