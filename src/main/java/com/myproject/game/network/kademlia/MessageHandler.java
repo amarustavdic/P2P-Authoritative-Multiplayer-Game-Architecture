@@ -47,7 +47,7 @@ public class MessageHandler implements Runnable {
 
         // Insert the sender node into the routing table
         boolean isNewNode = routingTable.insertNode(senderNode);
-        System.out.println(Constants.INFO + "New Node Added: " + isNewNode + Constants.RESET);
+        //System.out.println(Constants.INFO + "New Node Added: " + isNewNode + Constants.RESET);
 
         // Get the closest nodes to the target from the routing table
         KademliaID targetId = message.getSrcId();
@@ -101,7 +101,7 @@ public class MessageHandler implements Runnable {
 
             boolean inserted = routingTable.insertNode(node);
             // adding the node in my routing table
-            System.out.println(Constants.INFO + "New Node Added: " + inserted + Constants.RESET);
+            //System.out.println(Constants.INFO + "New Node Added: " + inserted + Constants.RESET);
         }
     }
 

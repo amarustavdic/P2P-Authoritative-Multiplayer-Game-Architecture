@@ -51,13 +51,13 @@ public class BlockchainMessageSender implements Runnable {
         List<Node> peers = dht.getKnowPeers();
         for (Node peer : peers) {
             int retries = 0;
-            while (retries < maxRetries) {
+            boolean messageSent = false;
+            while (retries < maxRetries && !messageSent) {
                 try (Socket socket = new Socket()) {
-                    socket.connect(new InetSocketAddress(peer.getAddress().getAddress(), port),
-                            connectionTimeout);
+                    socket.connect(new InetSocketAddress(peer.getAddress().getAddress(), port), connectionTimeout);
                     socket.getOutputStream().write(jsonMessage.getBytes());
                     socket.getOutputStream().flush();
-                    return; // Message sent successfully, exit the loop
+                    messageSent = true; // Message sent successfully
                 } catch (SocketTimeoutException e) {
                     System.out.println("Connection timeout to: " + peer.getNodeId() + ". Retrying...");
                     retries++;
@@ -66,7 +66,11 @@ public class BlockchainMessageSender implements Runnable {
                     retries++;
                 }
             }
-            System.out.println("Unable to send message to: " + peer.getNodeId());
+
+            if (!messageSent) {
+                System.out.println("Unable to send message to: " + peer.getNodeId());
+            }
         }
     }
+
 }
