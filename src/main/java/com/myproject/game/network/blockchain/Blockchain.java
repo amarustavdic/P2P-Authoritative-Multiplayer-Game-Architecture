@@ -33,12 +33,16 @@ public class Blockchain {
         this.sender = new BlockchainMessageSender(dht, outbox, port,1000, 2);
         this.receiver = new BlockchainMessageReceiver(port);
 
-        // genesis block hardcoded
-        chain.add(new Block(0, vdf.getN()));
 
         // setup is going to be done only once at the beginning
         // it could be performed dynamically in order to improve security, by changing the modulo N
         vdf.setup(2048, "SHA-512");
+
+
+        // genesis block hardcoded
+        chain.add(new Block(0, vdf.getN(),0));
+
+
 
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);

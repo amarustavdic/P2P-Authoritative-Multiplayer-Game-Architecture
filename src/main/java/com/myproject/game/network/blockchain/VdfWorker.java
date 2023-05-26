@@ -38,4 +38,8 @@ public class VdfWorker implements Runnable {
         }
     }
 
+
+    /**
+     *  trying to dynamically adjust the difficulty for the vdf calculation based on previous execution time
+     */
 }
