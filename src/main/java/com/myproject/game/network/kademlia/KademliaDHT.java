@@ -61,4 +61,8 @@ public class KademliaDHT {
         return routingTable.getAllNodes();
     }
 
+    public Node getClosestPeer() {
+        return routingTable.getClosestNodes(routingTable.getLocalNode().getNodeId(), 1).get(0);
+    }
+
 }

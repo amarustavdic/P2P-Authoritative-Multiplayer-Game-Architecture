@@ -9,7 +9,7 @@ public class Block {
 
     private int blockNumber;
     private BigInteger modulo;
-    long timestamp;
+    private long timestamp;
 
     public Block(int blockNumber, BigInteger modulo) {
         this.blockNumber = blockNumber;

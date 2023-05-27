@@ -12,5 +12,7 @@ public class BlockchainMessage {
     }
 
 
-
+    public BlockchainMessageType getType() {
+        return type;
+    }
 }

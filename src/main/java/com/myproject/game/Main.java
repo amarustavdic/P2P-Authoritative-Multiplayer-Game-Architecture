@@ -6,6 +6,9 @@ import com.myproject.game.network.kademlia.*;
 import javax.swing.*;
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
 
 
 public class Main {
@@ -26,14 +29,45 @@ public class Main {
         localIp = InetAddress.getLocalHost().getHostAddress();
 
         KademliaDHT kademliaDHT = new KademliaDHT(InetAddress.getByName(localIp), port, isBootstrap, B, K, alpha);
-        Blockchain blockchain = new Blockchain(kademliaDHT, blockchainPort);
+        Blockchain blockchain = new Blockchain(kademliaDHT, blockchainPort, isBootstrap);
 
 
         System.out.println("This node ID: " + kademliaDHT.getNodeId() + " (hex)");
         System.out.println("Bootstrap ID: " + kademliaDHT.getBootstrapId() + " (hex)");
 
         // run GUI
-        //SwingUtilities.invokeLater(GameGUI::new);
+        // SwingUtilities.invokeLater(GameGUI::new);
+
+
+
+
+
+
+
+        // just testing the shufling functionality of the arraylist
+        // Create an ArrayList
+        ArrayList<Integer> numbers = new ArrayList<>();
+        numbers.add(1);
+        numbers.add(2);
+        numbers.add(3);
+        numbers.add(4);
+        numbers.add(5);
+
+        // Set the random seed
+        long seed = 123; // Replace with your desired seed value
+        Collections.shuffle(numbers, new Random(seed));
+
+        // Print the shuffled ArrayList
+        System.out.println("Shuffled ArrayList: " + numbers);
+
+
+
+
+
+
+
+
+
     }
 
 }

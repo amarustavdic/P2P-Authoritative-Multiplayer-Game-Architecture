@@ -12,21 +12,22 @@ import java.net.SocketTimeoutException;
 import java.util.List;
 
 public class BlockchainMessageSender implements Runnable {
+    private final Gson gson;
     private final KademliaDHT dht;
     private final BlockchainOutbox outbox;
-    private final Socket socket;
     private final int port;
     private final int connectionTimeout;
     private final int maxRetries;
 
 
     public BlockchainMessageSender(KademliaDHT dht, BlockchainOutbox outbox, int port, int connectionTimeout, int maxRetries) {
+        this.gson = new Gson();
         this.dht = dht;
         this.outbox = outbox;
         this.port = port;
         this.connectionTimeout = connectionTimeout;
         this.maxRetries = maxRetries;
-        this.socket = new Socket();
+
     }
 
 
@@ -39,13 +40,49 @@ public class BlockchainMessageSender implements Runnable {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            sendBlockchainMessage(message);
+
+            switch (message.getType()) {
+                case SYNC:
+                    sendSyncRequest(message);
+
+                    break;
+            }
+
+
+            //sendBlockchainMessage(message);
         }
     }
 
 
+    private void sendSyncRequest(BlockchainMessage message) {
+        Node receiver = dht.getClosestPeer();
+
+        int retries = 0;
+        boolean messageSent = false;
+        while (retries < maxRetries && !messageSent) {
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress(receiver.getAddress().getAddress(), port), connectionTimeout);
+                socket.getOutputStream().write(gson.toJson(message).getBytes());
+                socket.getOutputStream().flush();
+                messageSent = true; // Message sent successfully
+            } catch (SocketTimeoutException e) {
+                System.out.println("Connection timeout to: " + receiver.getNodeId() + ". Retrying...");
+                retries++;
+            } catch (IOException e) {
+                System.out.println("Failed to connect to: " + receiver.getNodeId() + ". Retrying...");
+                retries++;
+            }
+        }
+
+        if (!messageSent) {
+            System.out.println("Unable to send message to: " + receiver.getNodeId());
+        }
+    }
+
+
+
+
     private void sendBlockchainMessage(BlockchainMessage message) {
-        Gson gson = new Gson();
         String jsonMessage = gson.toJson(message);
 
         List<Node> peers = dht.getKnowPeers();

@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 
 public class Blockchain {
 
+    private boolean isBootstrap;
     private int port;
     private KademliaDHT dht;
     private WesolowskiVDF vdf;
@@ -21,45 +22,54 @@ public class Blockchain {
     private ArrayList<Block> chain;
     private BlockchainMessageSender sender;
     private BlockchainMessageReceiver receiver;
+    private BlockchainMessageHandler messageHandler;
 
 
-    public Blockchain(KademliaDHT dht, int port) {
+    public Blockchain(KademliaDHT dht, int port, boolean isBootstrap) {
+        this.isBootstrap = isBootstrap;
         this.port = port;
         this.dht = dht;
         this.vdf = new WesolowskiVDF();
         this.chain = new ArrayList<>();
         this.inbox = new BlockchainInbox();
         this.outbox = new BlockchainOutbox();
+        this.messageHandler = new BlockchainMessageHandler(dht,inbox, outbox);
         this.sender = new BlockchainMessageSender(dht, outbox, port,1000, 2);
         this.receiver = new BlockchainMessageReceiver(port);
 
-
-        // setup is going to be done only once at the beginning
-        // it could be performed dynamically in order to improve security, by changing the modulo N
-        vdf.setup(2048, "SHA-512");
-
-
-        // genesis block hardcoded
-        chain.add(new Block(0, vdf.getN(),0));
-
+        initBlockchain();
 
 
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
         executorService.submit(sender);
         executorService.submit(receiver);
-        executorService.submit(new VdfWorker(vdf));
-
-
-
-
-
-
+        executorService.submit(messageHandler);
+        //executorService.submit(new VdfWorker(vdf));
 
 
 
     }
 
+
+    private void initBlockchain() {
+        if (isBootstrap) {
+            // for simplicity this is going to be done only by the bootstrap node
+            // later the vdf setup can be used dynamically in order to improve the security
+            // because the security of the vdf depends a lot on the factorization of modulo N
+            vdf.setup(2048, "SHA-256");
+            // genesis block
+            chain.add(new Block(0, vdf.getN(),0));
+        } else {
+            // send a SYNC request to the closest node, in order to synchronize the chain
+            try {
+                outbox.addMessage(new BlockchainMessage(BlockchainMessageType.SYNC, "hello"));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
 
 
 
