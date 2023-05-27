@@ -36,8 +36,8 @@ public class RoutingTable {
         } else {
             localNode = node;
             bootstrapNode = new Node(
-                    KademliaIDGenerator.generateID("172.17.0.2"+port),
-                    new InetSocketAddress( "172.17.0.2", port),
+                    KademliaIDGenerator.generateID("172.18.0.2"+port),
+                    new InetSocketAddress( "172.18.0.2", port),
                     true
             );
         }

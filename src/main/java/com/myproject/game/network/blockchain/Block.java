@@ -15,6 +15,7 @@ public class Block {
 
     private final int blockNumber;
     private final BigInteger modulo;
+    private final int vdfDifficulty;
     private String previousBlockHash;
     private String blockHash;
     private ArrayList<String> previousConsensusNodeList;
@@ -31,6 +32,7 @@ public class Block {
         this.shuffledConsensusNodeList = shuffledConsensusNodeList;
         this.blockProducer = blockProducer;
         this.timestamp = Instant.now().getEpochSecond();
+        this.vdfDifficulty = 100000;  // for now hardcoded, but can be decided dynamically by the network
         // block hash is calculated last since it includes all the rest of the data of the block in order to be calculated
         this.blockHash = calculateBlockHash();
     }
@@ -45,7 +47,7 @@ public class Block {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             // this still needs to be adjusted later
             String blockData = blockNumber + modulo.toString() + previousBlockHash + previousConsensusNodeList.toString() +
-                    shuffledConsensusNodeList.toString() + blockProducer + timestamp;
+                    shuffledConsensusNodeList.toString() + blockProducer + timestamp + vdfDifficulty;
 
             byte[] hashBytes = digest.digest(blockData.getBytes());
             BigInteger hashInt = new BigInteger(1, hashBytes);
@@ -62,6 +64,42 @@ public class Block {
     }
 
 
+    public BigInteger getModulo() {
+        return modulo;
+    }
+
+    public String getBlockHash() {
+        return blockHash;
+    }
+
+    public int getVdfDifficulty() {
+        return vdfDifficulty;
+    }
+
+    public ArrayList<String> getPreviousConsensusNodeList() {
+        return previousConsensusNodeList;
+    }
+
+    public ArrayList<String> getShuffledConsensusNodeList() {
+        return shuffledConsensusNodeList;
+    }
+
+
+    public int getBlockNumber() {
+        return blockNumber;
+    }
+
+    public String getPreviousBlockHash() {
+        return previousBlockHash;
+    }
+
+    public String getBlockProducer() {
+        return blockProducer;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 
     public String toJson() {
         Gson gson = new Gson();

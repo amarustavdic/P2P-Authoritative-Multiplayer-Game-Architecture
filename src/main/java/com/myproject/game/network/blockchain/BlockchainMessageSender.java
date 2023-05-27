@@ -6,9 +6,11 @@ import com.myproject.game.network.kademlia.Node;
 
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlockchainMessageSender implements Runnable {
@@ -44,14 +46,46 @@ public class BlockchainMessageSender implements Runnable {
             switch (message.getType()) {
                 case SYNC:
                     sendSyncRequest(message);
-
+                    break;
+                case NEW_BLOCK:
+                    broadcastNewBlock(message);
+                    System.out.println("new block broadcast");
                     break;
             }
-
-
-            //sendBlockchainMessage(message);
         }
     }
+
+
+    private void broadcastNewBlock(BlockchainMessage message) {
+        ArrayList<Node> knownPeers = (ArrayList<Node>) dht.getKnowPeers();
+
+        for (int i = 0; i < knownPeers.size(); i++) {
+            int retries = 0;
+            boolean messageSent = false;
+            while (retries < maxRetries && !messageSent) {
+                try (Socket socket = new Socket()) {
+                    socket.connect(new InetSocketAddress(knownPeers.get(i).getAddress().getAddress(), port), connectionTimeout);
+                    socket.getOutputStream().write(gson.toJson(message).getBytes());
+                    socket.getOutputStream().flush();
+                    messageSent = true; // Message sent successfully
+                } catch (SocketTimeoutException e) {
+                    System.out.println("Connection timeout to: " + knownPeers.get(i).getNodeId() + ". Retrying...");
+                    retries++;
+                } catch (IOException e) {
+                    System.out.println("Failed to connect to: " + knownPeers.get(i).getNodeId() + ". Retrying...");
+                    retries++;
+                }
+            }
+
+            if (!messageSent) {
+                System.out.println("Unable to send message to: " + knownPeers.get(i).getNodeId());
+            }
+        }
+
+
+
+    }
+
 
 
     private void sendSyncRequest(BlockchainMessage message) {

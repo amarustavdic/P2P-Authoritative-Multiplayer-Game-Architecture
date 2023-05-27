@@ -18,9 +18,9 @@ sleep 5
 
 
 # creating some additional containers, just to have a bit bigger network for  testing
-#docker run -it --rm -e ARG1="false" $JAR_NAME:$JAR_VERSION
-#docker run -it --rm -e ARG1="false" $JAR_NAME:$JAR_VERSION
-#docker run -it --rm -e ARG1="false" $JAR_NAME:$JAR_VERSION
-#docker run -it --rm -e ARG1="false" $JAR_NAME:$JAR_VERSION
 
+#N=10  # Number of containers to create
 
+#for ((i=1; i<=N; i++)); do
+#    docker run -it --rm -e ARG1="false" $JAR_NAME:$JAR_VERSION
+#done
