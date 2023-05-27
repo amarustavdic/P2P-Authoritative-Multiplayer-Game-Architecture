@@ -1,6 +1,7 @@
 package com.myproject.game.network.blockchain;
 
 
+import com.google.gson.Gson;
 import com.myproject.game.network.kademlia.KademliaDHT;
 import com.myproject.game.network.kademlia.RoutingTable;
 
@@ -32,7 +33,7 @@ public class BlockchainMessageHandler implements Runnable {
             switch (message.getType()) {
                 case SYNC:
                     System.out.println("I have received sync request!");
-
+                    System.out.println(new Gson().toJson(message));
                     break;
             }
         }

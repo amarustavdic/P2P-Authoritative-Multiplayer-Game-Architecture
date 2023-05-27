@@ -23,6 +23,7 @@ public class Blockchain {
     private BlockchainMessageSender sender;
     private BlockchainMessageReceiver receiver;
     private BlockchainMessageHandler messageHandler;
+    private VdfWorker vdfWorker;
 
 
     public Blockchain(KademliaDHT dht, int port, boolean isBootstrap) {
@@ -35,20 +36,18 @@ public class Blockchain {
         this.outbox = new BlockchainOutbox();
         this.messageHandler = new BlockchainMessageHandler(dht,inbox, outbox);
         this.sender = new BlockchainMessageSender(dht, outbox, port,1000, 2);
-        this.receiver = new BlockchainMessageReceiver(port);
+        this.receiver = new BlockchainMessageReceiver(port, inbox);
+        this.vdfWorker = new VdfWorker(vdf, chain);
 
         initBlockchain();
 
 
 
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        executorService.submit(vdfWorker);
         executorService.submit(sender);
         executorService.submit(receiver);
         executorService.submit(messageHandler);
-        //executorService.submit(new VdfWorker(vdf));
-
-
-
     }
 
 
@@ -59,7 +58,14 @@ public class Blockchain {
             // because the security of the vdf depends a lot on the factorization of modulo N
             vdf.setup(2048, "SHA-256");
             // genesis block
-            chain.add(new Block(0, vdf.getN(),0));
+            chain.add(new Block(
+                    0,
+                    vdf.getN(),
+                    "0",
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    dht.getNodeId()
+            ));
         } else {
             // send a SYNC request to the closest node, in order to synchronize the chain
             try {
