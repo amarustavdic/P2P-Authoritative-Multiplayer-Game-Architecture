@@ -2,6 +2,7 @@ package com.myproject.game.network.kademlia;
 
 
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,12 +19,11 @@ public class KademliaDHT {
     private final KademliaMessageReceiver messageReceiver;
     private final KademliaMessageSender messageSender;
     private final MessageHandler messageHandler;
-
     private final RoutingTableUpdater routingTableUpdater;
     private final PingHandler pingHandler;
 
 
-    public KademliaDHT(InetAddress ip, int port, boolean isBootstrapNode, int B, int K, int alpha) {
+    public KademliaDHT(InetAddress ip, int port, boolean isBootstrapNode, int B, int K, int alpha) throws SocketException {
         this.routingTable = new RoutingTable(ip, port, isBootstrapNode, B, K, alpha);
         this.inMessageQueue = new InMessageQueue();
         this.outMessageQueue = new OutMessageQueue();
@@ -35,12 +35,12 @@ public class KademliaDHT {
 
 
 
-        ExecutorService executorService = Executors.newFixedThreadPool(6);
+        ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.submit(messageSender);
         executorService.submit(messageReceiver);
         executorService.submit(messageHandler);
         executorService.submit(routingTableUpdater);
-        executorService.submit(pingHandler);
+        //executorService.submit(pingHandler);
 
         // only used for debugging purposes
         executorService.submit(new DebugCLI(routingTable));

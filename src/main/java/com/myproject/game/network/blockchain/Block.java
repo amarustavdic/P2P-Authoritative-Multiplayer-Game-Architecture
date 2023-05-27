@@ -32,7 +32,7 @@ public class Block {
         this.shuffledConsensusNodeList = shuffledConsensusNodeList;
         this.blockProducer = blockProducer;
         this.timestamp = Instant.now().getEpochSecond();
-        this.vdfDifficulty = 100000;  // for now hardcoded, but can be decided dynamically by the network
+        this.vdfDifficulty = 300000;  // for now hardcoded, but can be decided dynamically by the network
         // block hash is calculated last since it includes all the rest of the data of the block in order to be calculated
         this.blockHash = calculateBlockHash();
     }
