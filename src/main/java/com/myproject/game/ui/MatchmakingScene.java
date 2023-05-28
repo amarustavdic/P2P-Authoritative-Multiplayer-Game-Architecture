@@ -1,6 +1,7 @@
 package com.myproject.game.ui;
 
 
+import com.google.common.eventbus.Subscribe;
 import com.myproject.game.ebus.EventType;
 import com.google.common.eventbus.EventBus;
 
@@ -16,6 +17,7 @@ public class MatchmakingScene extends JPanel {
 
     public MatchmakingScene(int width, int height, EventBus eventBus) {
         this.eventBus = eventBus;
+        eventBus.register(this);
 
         this.setSize(new Dimension(width, height));
         this.setPreferredSize(new Dimension(width, height));
@@ -53,13 +55,18 @@ public class MatchmakingScene extends JPanel {
         });
         animationTimer.start();
 
-
-
-        Timer test = new Timer(10000, e -> {
-            publishEvent(EventType.MATCH_FOUND);
-        });
-        test.start();
     }
+
+
+    @Subscribe
+    public void handleMessage(EventType eventType) {
+
+        // when peer to peer connection is established we .. do something here
+        if (eventType == EventType.PTP_ESTABLISHED) {
+            publishEvent(EventType.MATCH_FOUND);
+        }
+    }
+
 
     private void publishEvent(EventType eventType) {
         eventBus.post(eventType);

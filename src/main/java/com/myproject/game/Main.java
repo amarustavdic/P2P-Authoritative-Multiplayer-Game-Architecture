@@ -33,7 +33,7 @@ public class Main {
 
 
         KademliaDHT kademliaDHT = new KademliaDHT(InetAddress.getByName(localIp), port, isBootstrap, B, K, alpha);
-        Blockchain blockchain = new Blockchain(kademliaDHT, blockchainPort);
+        Blockchain blockchain = new Blockchain(kademliaDHT, blockchainPort, eventBus);
 
 
 
@@ -48,17 +48,6 @@ public class Main {
             }
         });
 
-
-
-        AtomicBoolean sent = new AtomicBoolean(false);
-        Timer timer = new Timer(10000, e -> {
-            if (!sent.get()) {
-                blockchain.makeMatchmakingRequest(BlockchainMessageType.TTT_MATCHMAKING_REQUEST);
-                System.out.println("should be in");
-                sent.set(true);
-            }
-        });
-        timer.start();
     }
 
 }

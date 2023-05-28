@@ -1,7 +1,9 @@
 package com.myproject.game.network.blockchain;
 
 
+import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
+import com.myproject.game.ebus.EventType;
 import com.myproject.game.network.kademlia.KademliaDHT;
 import com.myproject.game.network.kademlia.Node;
 
@@ -15,6 +17,7 @@ import java.util.NoSuchElementException;
 
 
 public class BlockchainMessageHandler implements Runnable {
+    private final EventBus eventBus;
     private final VDFService vdfService;
     private final KademliaDHT dht;
     private final BlockchainInbox inbox;
@@ -28,7 +31,9 @@ public class BlockchainMessageHandler implements Runnable {
     private final MatchRequestList matchRequestList;
 
 
-    public BlockchainMessageHandler(MatchRequestList matchRequestList,InclusionRequestsList inclusionRequestsList, VDFService vdfService,KademliaDHT dht, BlockchainInbox inbox, BlockchainOutbox outbox, ArrayList<Block> chain, int maxRetries, int port, int connectionTimeout, Blockchain blockchain) {
+    public BlockchainMessageHandler(EventBus eventBus,MatchRequestList matchRequestList, InclusionRequestsList inclusionRequestsList, VDFService vdfService, KademliaDHT dht, BlockchainInbox inbox, BlockchainOutbox outbox, ArrayList<Block> chain, int maxRetries, int port, int connectionTimeout, Blockchain blockchain) {
+        this.eventBus = eventBus;
+
         this.dht = dht;
         this.vdfService = vdfService;
         this.inbox = inbox;
@@ -61,6 +66,8 @@ public class BlockchainMessageHandler implements Runnable {
                 case NEW_BLOCK:
                     System.out.println("I have received new block");
                     addNewBlockToChain(message);
+                    eventBus.post(EventType.PTP_ESTABLISHED);
+
                     break;
                 case INCLUSION_REQUEST:
                     System.out.println("inclusion request sent");
@@ -80,6 +87,8 @@ public class BlockchainMessageHandler implements Runnable {
             }
         }
     }
+
+
 
 
     private void addNewBlockToChain(BlockchainMessage message) {

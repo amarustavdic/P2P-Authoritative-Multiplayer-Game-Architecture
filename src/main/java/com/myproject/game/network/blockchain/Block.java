@@ -65,7 +65,13 @@ public class Block {
     }
 
 
+    public String getP1ID() {
+        return p1ID;
+    }
 
+    public String getP2ID() {
+        return p2ID;
+    }
 
     public BigInteger getModulo() {
         return modulo;

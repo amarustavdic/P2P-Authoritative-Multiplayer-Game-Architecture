@@ -57,18 +57,32 @@ public class VDFService implements Runnable {
 
                 if (dht.getNodeId().equals(nextProducerID)) {
                     System.out.println("I am the next block producer");
+                    Block newBlock;
+                    if (requestList.getMatchRequests().isEmpty()) {
+                        newBlock = new Block(
+                                lastblock.getBlockNumber()+1,
+                                lastblock.getModulo(),
+                                lastblock.getBlockHash(),
+                                inclusionRequestsIncluded(lastblock.getPreviousConsensusNodeList()),
+                                dht.getNodeId(),
+                                null,
+                                null
+                        );
+                    } else {
+                        String[] ps = matchPlayers().split(",");
 
-                    String[] ps = matchPlayers().split(",");
+                        newBlock = new Block(
+                                lastblock.getBlockNumber()+1,
+                                lastblock.getModulo(),
+                                lastblock.getBlockHash(),
+                                inclusionRequestsIncluded(lastblock.getPreviousConsensusNodeList()),
+                                dht.getNodeId(),
+                                ps[0],
+                                ps[1]
+                        );
+                    }
 
-                    Block newBlock = new Block(
-                            lastblock.getBlockNumber()+1,
-                            lastblock.getModulo(),
-                            lastblock.getBlockHash(),
-                            inclusionRequestsIncluded(lastblock.getPreviousConsensusNodeList()),
-                            dht.getNodeId(),
-                            ps[0],
-                            ps[1]
-                    );
+
 
                     System.out.println(newBlock.toJson());
                     processNewlyCreatedBlock(newBlock);

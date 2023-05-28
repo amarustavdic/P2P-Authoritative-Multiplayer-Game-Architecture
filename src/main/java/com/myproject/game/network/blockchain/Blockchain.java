@@ -1,7 +1,12 @@
 package com.myproject.game.network.blockchain;
 
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
+import com.myproject.game.ebus.EventType;
 import com.myproject.game.network.kademlia.KademliaDHT;
 import com.myproject.game.network.vdf.WesolowskiVDF;
+import com.myproject.game.ui.GameScene2;
+import com.myproject.game.ui.MatchmakingScene;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -10,6 +15,7 @@ import java.util.concurrent.Executors;
 
 public class Blockchain {
 
+    private final EventBus eventBus;
     private final boolean isBootstrap;
     private final int port;
     private final KademliaDHT dht;
@@ -26,7 +32,11 @@ public class Blockchain {
     private final VDFService VDFService;
 
 
-    public Blockchain(KademliaDHT dht, int port) {
+    public Blockchain(KademliaDHT dht, int port, EventBus eventBus) {
+        this.eventBus = eventBus;
+
+        eventBus.register(this);
+
         this.isBootstrap = Objects.equals(dht.getBootstrapId(), dht.getNodeId());
         this.port = port;
         this.dht = dht;
@@ -38,7 +48,7 @@ public class Blockchain {
         this.matchRequestList = new MatchRequestList();
         this.inclusionRequestsList = new InclusionRequestsList();
         this.VDFService = new VDFService(matchRequestList,inclusionRequestsList, vdf, this, dht, outbox);
-        this.messageHandler = new BlockchainMessageHandler(matchRequestList,inclusionRequestsList, VDFService,dht,inbox, outbox, chain,4, port, 1000, this);
+        this.messageHandler = new BlockchainMessageHandler(eventBus,matchRequestList,inclusionRequestsList, VDFService,dht,inbox, outbox, chain,4, port, 1000, this);
         this.sender = new BlockchainMessageSender(dht, outbox, port,1000, 4);
         this.receiver = new BlockchainMessageReceiver(port, inbox);
 
@@ -57,6 +67,23 @@ public class Blockchain {
         executorService.submit(messageHandler);
 
     }
+
+
+    @Subscribe
+    public void handleMessage(EventType eventType) {
+
+        if (eventType == EventType.ONLINE_GAME) {
+            System.out.println("im from blockchain");
+            this.makeMatchmakingRequest(BlockchainMessageType.TTT_MATCHMAKING_REQUEST, dht.getNodeId());
+        }
+    }
+
+
+
+
+
+
+
 
 
     private void initBlockchain() {
@@ -94,10 +121,10 @@ public class Blockchain {
     }
 
 
-    public void makeMatchmakingRequest(BlockchainMessageType requestType) {
+    public void makeMatchmakingRequest(BlockchainMessageType requestType, String myID) {
         BlockchainMessage request = new BlockchainMessage(
                 requestType,
-                "I want to play!"
+                myID
         );
         try {
             outbox.addMessage(request);
