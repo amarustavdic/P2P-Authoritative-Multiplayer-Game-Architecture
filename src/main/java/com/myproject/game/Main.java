@@ -1,19 +1,20 @@
 package com.myproject.game;
 
+import com.google.common.eventbus.EventBus;
 import com.myproject.game.network.blockchain.Blockchain;
+import com.myproject.game.network.blockchain.BlockchainMessageType;
 import com.myproject.game.network.kademlia.*;
 import com.myproject.game.ui.GameGUI;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class Main {
 
+    private static final EventBus eventBus = new EventBus();
     private static String localIp;
     private static String bootstrapIp = "172.18.0.2";
     private static boolean isBootstrap;
@@ -35,11 +36,29 @@ public class Main {
         Blockchain blockchain = new Blockchain(kademliaDHT, blockchainPort);
 
 
+
         System.out.println("This node ID: " + kademliaDHT.getNodeId() + " (hex)");
         System.out.println("Bootstrap ID: " + kademliaDHT.getBootstrapId() + " (hex)");
 
         // run GUI
-        //SwingUtilities.invokeLater(GameGUI::new);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new GameGUI(eventBus);
+            }
+        });
+
+
+
+        AtomicBoolean sent = new AtomicBoolean(false);
+        Timer timer = new Timer(10000, e -> {
+            if (!sent.get()) {
+                blockchain.makeMatchmakingRequest(BlockchainMessageType.TTT_MATCHMAKING_REQUEST);
+                System.out.println("should be in");
+                sent.set(true);
+            }
+        });
+        timer.start();
     }
 
 }

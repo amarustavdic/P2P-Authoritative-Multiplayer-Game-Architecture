@@ -9,7 +9,7 @@ import javax.swing.*;
 
 public class GameGUI extends JFrame {
 
-    private EventBus eventBus = new EventBus();
+    private EventBus eventBus;
     private int WIDTH = 600;
     private int HEIGHT = 400;
 
@@ -18,7 +18,8 @@ public class GameGUI extends JFrame {
     private GameScene2 gameScene2;
 
 
-    public GameGUI() {
+    public GameGUI(EventBus eventBus) {
+        this.eventBus = eventBus;
         eventBus.register(this);
         this.gameGUI = this;
 

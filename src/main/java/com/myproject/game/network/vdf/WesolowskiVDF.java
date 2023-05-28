@@ -34,7 +34,7 @@ public class WesolowskiVDF {
         N = p.multiply(q);
     }
 
-    public EvalResult eval(byte[] m, int T, BigInteger N) {
+    public VDFResult eval(byte[] m, int T, BigInteger N) {
         BigInteger x = new BigInteger(hash(m));
         BigInteger y = x;
         for (int i = 0; i < T; i++) {
@@ -42,10 +42,10 @@ public class WesolowskiVDF {
         }
         BigInteger l = hashPrime((x.add(y)).toByteArray());
         BigInteger proof = x.modPow(BigInteger.TWO.pow(T).divide(l), N);
-        return new EvalResult(proof, l);
+        return new VDFResult(proof, l);
     }
 
-    public boolean verify(byte[] m, int T, BigInteger l, BigInteger proof) {
+    public boolean verify(byte[] m, int T, BigInteger l, BigInteger proof, BigInteger N) {
         BigInteger x = new BigInteger(hash(m));
         BigInteger r = BigInteger.TWO.modPow(BigInteger.valueOf(T),l);
         BigInteger y = modExp(proof,x,l,r,N);

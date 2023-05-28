@@ -1,71 +1,89 @@
 package com.myproject.game.network.blockchain;
 
-
-import com.google.gson.Gson;
+import com.google.gson.*;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
+import java.nio.charset.StandardCharsets;
+
+
 
 public class BlockchainMessageReceiver implements Runnable {
     private int port;
     private Gson gson;
     private BlockchainInbox inbox;
-    private ExecutorService executorService;
+    private AsynchronousServerSocketChannel serverSocketChannel;
 
     public BlockchainMessageReceiver(int port, BlockchainInbox inbox) {
         this.port = port;
         this.inbox = inbox;
         this.gson = new Gson();
-        this.executorService = Executors.newCachedThreadPool();
-    }
-
-
-    @Override
-    public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                executorService.submit(() -> handleMessage(clientSocket));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error in the receiver thread.", e);
-        }
-    }
-
-
-
-    private void handleMessage(Socket clientSocket) {
         try {
-            InputStream inputStream = clientSocket.getInputStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead = inputStream.read(buffer);
-
-            if (bytesRead > 0) {
-                String jsonMessage = new String(buffer, 0, bytesRead);
-                // Process the received message
-                BlockchainMessage blockchainMessage = gson.fromJson(jsonMessage, BlockchainMessage.class);
-                inbox.addMessage(blockchainMessage);
-            }
-
-            clientSocket.close();
+            this.serverSocketChannel = AsynchronousServerSocketChannel.open().bind(new InetSocketAddress(port));
         } catch (IOException e) {
-            throw new RuntimeException("Error while handling the received message.", e);
-        } catch (InterruptedException e) {
-            System.out.println("Unable to add new message to inbox queue!");
             throw new RuntimeException(e);
         }
     }
 
+    @Override
+    public void run() {
+        serverSocketChannel.accept(null, new CompletionHandler<>() {
+            @Override
+            public void completed(AsynchronousSocketChannel clientSocketChannel, Object attachment) {
+                serverSocketChannel.accept(null, this); // Accept the next connection
+                handleMessage(clientSocketChannel);
+                System.out.println("New message has been received");
+            }
+
+            @Override
+            public void failed(Throwable exc, Object attachment) {
+                throw new RuntimeException("Error in accepting client connection.", exc);
+            }
+        });
+    }
+
+    private void handleMessage(AsynchronousSocketChannel clientSocketChannel) {
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        clientSocketChannel.read(buffer, null, new CompletionHandler<>() {
+            @Override
+            public void completed(Integer bytesRead, Object attachment) {
+                if (bytesRead > 0) {
+                    buffer.flip();
+                    String jsonMessage = new String(buffer.array(), 0, bytesRead, StandardCharsets.UTF_8);
+                    // Process the received message
 
 
+                    System.out.println(jsonMessage);
 
 
+                    BlockchainMessage blockchainMessage = gson.fromJson(jsonMessage, BlockchainMessage.class);
 
 
+                    try {
+                        inbox.addMessage(blockchainMessage);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                // Clear the buffer and prepare for the next read
+                buffer.clear();
+                clientSocketChannel.read(buffer, null, this);
+            }
+
+            @Override
+            public void failed(Throwable exc, Object attachment) {
+                try {
+                    clientSocketChannel.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Error while closing client socket channel.", e);
+                }
+            }
+        });
+    }
 
 }
-

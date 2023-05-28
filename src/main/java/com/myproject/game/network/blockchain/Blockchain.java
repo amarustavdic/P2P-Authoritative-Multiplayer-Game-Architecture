@@ -1,31 +1,29 @@
 package com.myproject.game.network.blockchain;
 
-import com.google.gson.Gson;
 import com.myproject.game.network.kademlia.KademliaDHT;
-import com.myproject.game.network.vdf.EvalResult;
 import com.myproject.game.network.vdf.WesolowskiVDF;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Blockchain {
 
-    private boolean isBootstrap;
-    private int port;
-    private KademliaDHT dht;
-    private WesolowskiVDF vdf;
-    private BlockchainOutbox outbox;
-    private BlockchainInbox inbox;
-    private ArrayList<Block> chain;
+    private final boolean isBootstrap;
+    private final int port;
+    private final KademliaDHT dht;
+    private final WesolowskiVDF vdf;
+    private final BlockchainOutbox outbox;
+    private final BlockchainInbox inbox;
+    private final InclusionRequestsList inclusionRequestsList;
+    private final MatchRequestList matchRequestList;
+    private final ArrayList<Block> chain;
     private boolean newBlock;
-    private BlockchainMessageSender sender;
-    private BlockchainMessageReceiver receiver;
-    private BlockchainMessageHandler messageHandler;
-    private VdfWorker vdfWorker;
+    private final BlockchainMessageSender sender;
+    private final BlockchainMessageReceiver receiver;
+    private final BlockchainMessageHandler messageHandler;
+    private final VDFService VDFService;
 
 
     public Blockchain(KademliaDHT dht, int port) {
@@ -34,13 +32,17 @@ public class Blockchain {
         this.dht = dht;
         this.vdf = new WesolowskiVDF();
         this.chain = new ArrayList<>();
-        this.newBlock = Objects.equals(dht.getBootstrapId(), dht.getNodeId());
+        this.newBlock = true;
         this.inbox = new BlockchainInbox();
         this.outbox = new BlockchainOutbox();
-        this.messageHandler = new BlockchainMessageHandler(dht,inbox, outbox, chain,4, port, 1000, this);
+        this.matchRequestList = new MatchRequestList();
+        this.inclusionRequestsList = new InclusionRequestsList();
+        this.VDFService = new VDFService(matchRequestList,inclusionRequestsList, vdf, this, dht, outbox);
+        this.messageHandler = new BlockchainMessageHandler(matchRequestList,inclusionRequestsList, VDFService,dht,inbox, outbox, chain,4, port, 1000, this);
         this.sender = new BlockchainMessageSender(dht, outbox, port,1000, 4);
         this.receiver = new BlockchainMessageReceiver(port, inbox);
-        this.vdfWorker = new VdfWorker(vdf, chain, this, dht, outbox);
+
+
 
         initBlockchain();
 
@@ -48,19 +50,17 @@ public class Blockchain {
 
 
 
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.submit(VDFService);
         executorService.submit(sender);
         executorService.submit(receiver);
         executorService.submit(messageHandler);
-        executorService.submit(vdfWorker);
+
     }
 
 
     private void initBlockchain() {
         if (isBootstrap) {
-            // for simplicity this is going to be done only by the bootstrap node
-            // later the vdf setup can be used dynamically in order to improve the security
-            // because the security of the vdf depends a lot on the factorization of modulo N
             vdf.setup(2048, "SHA-256");
             // genesis block
             ArrayList<String> consensusList = new ArrayList<>();
@@ -70,21 +70,43 @@ public class Blockchain {
                     vdf.getN(),
                     "0",
                     consensusList,  // list of consensus nodes
-                    consensusList,  // shuffled list of consensus nodes
-                    dht.getNodeId()
+                    dht.getNodeId(),
+                    null,
+                    null
             ));
         } else {
             // send a SYNC request to the closest node, in order to synchronize the chain
+            // jebem si mater
+            vdf.setup(2048, "SHA-256");
+            BlockchainMessage inclusionRequest = new BlockchainMessage(
+                    BlockchainMessageType.INCLUSION_REQUEST,
+                    dht.getNodeId()
+            );
             try {
-                // just for testing purposes
-                Thread.sleep(5000);
-                outbox.addMessage(new BlockchainMessage(BlockchainMessageType.SYNC, "hello"));
+                outbox.addMessage(inclusionRequest);
+                System.out.println("inclusion request was added to the outbox");
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                System.out.println("inclusion request was not added to the outbox");
+
             }
         }
 
     }
+
+
+    public void makeMatchmakingRequest(BlockchainMessageType requestType) {
+        BlockchainMessage request = new BlockchainMessage(
+                requestType,
+                "I want to play!"
+        );
+        try {
+            outbox.addMessage(request);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 
 
     public boolean isNewBlock() {
@@ -97,5 +119,17 @@ public class Blockchain {
 
     public ArrayList<Block> getChain() {
         return chain;
+    }
+
+    public boolean isChainEmpty() {
+        return chain.isEmpty();
+    }
+
+    public void addNewBlock(Block block) {
+        chain.add(block);
+    }
+
+    public Block getLastBlock() {
+        return chain.get(chain.size()-1);
     }
 }

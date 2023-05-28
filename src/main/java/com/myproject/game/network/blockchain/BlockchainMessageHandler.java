@@ -10,9 +10,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 
 public class BlockchainMessageHandler implements Runnable {
+    private final VDFService vdfService;
     private final KademliaDHT dht;
     private final BlockchainInbox inbox;
     private final BlockchainOutbox outbox;
@@ -21,10 +24,13 @@ public class BlockchainMessageHandler implements Runnable {
     private final int port;
     private final int connectionTimeout;
     private final Blockchain blockchain;
+    private final InclusionRequestsList inclusionRequestsList;
+    private final MatchRequestList matchRequestList;
 
 
-    public BlockchainMessageHandler(KademliaDHT dht, BlockchainInbox inbox, BlockchainOutbox outbox, ArrayList<Block> chain, int maxRetries, int port, int connectionTimeout, Blockchain blockchain) {
+    public BlockchainMessageHandler(MatchRequestList matchRequestList,InclusionRequestsList inclusionRequestsList, VDFService vdfService,KademliaDHT dht, BlockchainInbox inbox, BlockchainOutbox outbox, ArrayList<Block> chain, int maxRetries, int port, int connectionTimeout, Blockchain blockchain) {
         this.dht = dht;
+        this.vdfService = vdfService;
         this.inbox = inbox;
         this.outbox = outbox;
         this.chain = chain;
@@ -32,6 +38,8 @@ public class BlockchainMessageHandler implements Runnable {
         this.port = port;
         this.connectionTimeout = connectionTimeout;
         this.blockchain = blockchain;
+        this.inclusionRequestsList = inclusionRequestsList;
+        this.matchRequestList = matchRequestList;
     }
 
 
@@ -52,55 +60,81 @@ public class BlockchainMessageHandler implements Runnable {
                     break;
                 case NEW_BLOCK:
                     System.out.println("I have received new block");
-                    //System.out.println(message.toJson());
-                    broadcastNewBlock(message);
+                    addNewBlockToChain(message);
+                    break;
+                case INCLUSION_REQUEST:
+                    System.out.println("inclusion request sent");
+                    inclusionRequestsList.cacheNewInclusionRequest(message);
+                    break;
+                case RPS_MATCHMAKING_REQUEST:
+                    matchRequestList.cacheRequest(message);
+                    System.out.println("RPS request ... stored");
+                    break;
+                case TTT_MATCHMAKING_REQUEST:
+                    matchRequestList.cacheRequest(message);
+                    System.out.println("TTT request stored...");
+                    break;
+                default:
+                    // for the rest doing nothing
                     break;
             }
         }
     }
 
 
+    private void addNewBlockToChain(BlockchainMessage message) {
+        Gson gson = new Gson();
+        Block block = gson.fromJson(message.getPayload(), Block.class);
+        blockchain.addNewBlock(block);
+    }
+
+
 
     private void broadcastNewBlock(BlockchainMessage message) {
         Gson gson = new Gson();
-        ArrayList<Node> knownPeers = (ArrayList<Node>) dht.getKnowPeers();
+        List<Node> knownPeers = dht.getKnowPeers(); // Use List instead of specific implementation
+
         Block block = gson.fromJson(message.getPayload(), Block.class);
-        System.out.print(" block sequence number: " + block.getBlockNumber());
-        System.out.println();
+        System.out.println("Block sequence number: " + block.getBlockNumber());
 
-        // new received block added / new last block
-        blockchain.getChain().add(block);
+        // Check if the received block is the same as the last block in the chain
+        if (!blockchain.getChain().isEmpty() && blockchain.getChain().get(blockchain.getChain().size() - 1).getBlockNumber() == block.getBlockNumber()) {
+            return; // Avoid broadcasting the same block again
+        }
 
-        // resolivng broadcast looping
-        if (chain.get(chain.size()-1).getBlockNumber() == block.getBlockNumber()) return;
-
-        // set new block flag to true
+        blockchain.addNewBlock(block); // Add the received block to the chain
+        System.out.println(blockchain.getChain().size());
         blockchain.setNewBlock(true);
+        System.out.println(blockchain.isNewBlock());
 
 
-        for (int i = 0; i < knownPeers.size(); i++) {
+
+
+        for (Node peer : knownPeers) {
             int retries = 0;
             boolean messageSent = false;
+
             while (retries < maxRetries && !messageSent) {
                 try (Socket socket = new Socket()) {
-                    socket.connect(new InetSocketAddress(knownPeers.get(i).getAddress().getAddress(), port), connectionTimeout);
+                    socket.connect(new InetSocketAddress(peer.getAddress().getAddress(), port), connectionTimeout);
                     socket.getOutputStream().write(gson.toJson(message).getBytes());
                     socket.getOutputStream().flush();
                     messageSent = true; // Message sent successfully
                 } catch (SocketTimeoutException e) {
-                    System.out.println("Connection timeout to: " + knownPeers.get(i).getNodeId() + ". Retrying...");
+                    System.out.println("Connection timeout to: " + peer.getNodeId() + ". Retrying...");
                     retries++;
                 } catch (IOException e) {
-                    System.out.println("Failed to connect to: " + knownPeers.get(i).getNodeId() + ". Retrying...");
+                    System.out.println("Failed to connect to: " + peer.getNodeId() + ". Retrying...");
                     retries++;
                 }
             }
 
             if (!messageSent) {
-                System.out.println("Unable to send message to: " + knownPeers.get(i).getNodeId());
+                System.out.println("Unable to send message to: " + peer.getNodeId());
             }
         }
     }
+
 
 
 

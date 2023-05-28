@@ -4,11 +4,11 @@ import com.google.gson.Gson;
 
 import java.math.BigInteger;
 
-public class EvalResult {
+public class VDFResult {
     private final BigInteger proof;
     private final BigInteger lPrime;
 
-    public EvalResult(BigInteger proof, BigInteger lPrime) {
+    public VDFResult(BigInteger proof, BigInteger lPrime) {
         this.proof = proof;
         this.lPrime = lPrime;
     }
