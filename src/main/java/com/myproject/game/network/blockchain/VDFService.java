@@ -1,5 +1,6 @@
 package com.myproject.game.network.blockchain;
 
+import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.myproject.game.network.kademlia.KademliaDHT;
@@ -10,6 +11,7 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class VDFService implements Runnable {
+    EventBus eventBus;
     private final Gson gson;
     private final WesolowskiVDF vdf;
     private final Blockchain blockchain;
@@ -18,8 +20,9 @@ public class VDFService implements Runnable {
     private final InclusionRequestsList inclusionRequestsList;
     private final MatchRequestList requestList;
 
-    public VDFService(MatchRequestList requestList,InclusionRequestsList inclusionRequestsList, WesolowskiVDF vdf, Blockchain blockchain, KademliaDHT dht, BlockchainOutbox outbox) {
+    public VDFService(EventBus eventBus, MatchRequestList requestList,InclusionRequestsList inclusionRequestsList, WesolowskiVDF vdf, Blockchain blockchain, KademliaDHT dht, BlockchainOutbox outbox) {
         this.gson = new Gson();
+        this.eventBus = eventBus;
         this.vdf = vdf;
         this.dht = dht;
         this.blockchain = blockchain;

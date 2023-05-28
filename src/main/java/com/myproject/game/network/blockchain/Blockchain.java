@@ -47,7 +47,7 @@ public class Blockchain {
         this.outbox = new BlockchainOutbox();
         this.matchRequestList = new MatchRequestList();
         this.inclusionRequestsList = new InclusionRequestsList();
-        this.VDFService = new VDFService(matchRequestList,inclusionRequestsList, vdf, this, dht, outbox);
+        this.VDFService = new VDFService(eventBus,matchRequestList,inclusionRequestsList, vdf, this, dht, outbox);
         this.messageHandler = new BlockchainMessageHandler(eventBus,matchRequestList,inclusionRequestsList, VDFService,dht,inbox, outbox, chain,4, port, 1000, this);
         this.sender = new BlockchainMessageSender(dht, outbox, port,1000, 4);
         this.receiver = new BlockchainMessageReceiver(port, inbox);
